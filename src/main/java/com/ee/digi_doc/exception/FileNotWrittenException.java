@@ -4,5 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Exception.FileNotWrittenException")
-public class FileNotWrittenException extends RuntimeException {
+public class FileNotWrittenException extends DigiDocException {
+
+    public FileNotWrittenException(Object argument) {
+        super(argument);
+    }
+
 }

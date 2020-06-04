@@ -47,18 +47,18 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public File create(MultipartFile multipartFile) {
-        try {
-            File file = fileRepository.saveAndFlush(File.of(multipartFile));
-            log.info("Create file: {}", file);
+        File file = fileRepository.saveAndFlush(File.of(multipartFile));
+        log.info("Create file: {}", file);
 
+        try {
             Files.write(fileStorageLocation.resolve(file.getFileName()), file.getContent());
             log.debug("File has been successfully written");
-
-            return file;
         } catch (IOException e) {
             log.error("Exception obtained during file write", e);
-            throw new FileNotWrittenException();
+            throw new FileNotWrittenException(file.getFileName());
         }
+
+        return file;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class FileServiceImpl implements FileService {
             return file;
         } catch (IOException e) {
             log.error("Exception obtained during file read", e);
-            throw new FileNotReadException();
+            throw new FileNotReadException(file.getFileName());
         }
     }
 
@@ -109,7 +109,7 @@ public class FileServiceImpl implements FileService {
             log.info("File has been deleted from hard disk");
         } catch (IOException e) {
             log.error("Exception obtained during file delete", e);
-            throw new FileNotDeletedException();
+            throw new FileNotDeletedException(file.getFileName());
         }
     }
 
