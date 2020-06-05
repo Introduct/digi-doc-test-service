@@ -21,4 +21,4 @@ springdoc:
     path: /api-documentation.html
 
 file:
-  directory: ./var/files
+  directory: /var/files
