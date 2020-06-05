@@ -1,0 +1,57 @@
+version: '2.1'
+
+services:
+  database:
+    container_name: dogi-doc_database
+    image: postgres:9.6.12
+    working_dir: /application
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME:-digi-doc-service}
+      - POSTGRES_USER=${DATABASE_USERNAME:-service}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD:-servicepass123}
+      - PGDATA=/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-service}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6432:5432"
+    networks:
+      dogi-doc-network:
+        aliases:
+          - database
+
+  digi-doc-test-service:
+    image: digi-doc-test-service:latest
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-local
+    environment:
+      - PROFILE=dev
+      - SERVER_PORT=${SERVER_PORT:-8080}
+      - DATABASE_HOST=${DATABASE_HOST:-database}
+      - DATABASE_PORT=${DATABASE_PORT:-5432}
+      - DATABASE_NAME=${DATABASE_NAME:-digi-doc-service}
+      - DATABASE_USERNAME=${DATABASE_USERNAME:-service}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-servicepass123}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/actuator/health"]
+      timeout: 60s
+      interval: 10s
+    depends_on:
+      - database
+    ports:
+      - 8080:8080
+    networks:
+      dogi-doc-network:
+        aliases:
+          - digi-doc-test-service
+
+volumes:
+  database:
+
+networks:
+  dogi-doc-network:
+    name: dogi-doc-network
