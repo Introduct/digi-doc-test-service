@@ -44,6 +44,8 @@ services:
       - database
     ports:
       - 8080:8080
+    volumes:
+      - files:/var/files
     networks:
       dogi-doc-network:
         aliases:
@@ -51,6 +53,7 @@ services:
 
 volumes:
   database:
+  files:
 
 networks:
   dogi-doc-network:
