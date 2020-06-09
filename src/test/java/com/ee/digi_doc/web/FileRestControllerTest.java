@@ -1,8 +1,8 @@
 package com.ee.digi_doc.web;
 
-import com.ee.digi_doc.persistance.model.File;
-import com.ee.digi_doc.service.FileService;
 import com.ee.digi_doc.util.FileGenerator;
+import com.ee.digi_doc.web.dto.FileDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ class FileRestControllerTest {
     private MockMvc mvc;
 
     @Autowired
-    private FileService fileService;
+    private ObjectMapper objectMapper;
 
     @Test
     void whenCreateFile_thenOk() throws Exception {
@@ -44,14 +44,14 @@ class FileRestControllerTest {
 
     @Test
     void whenGetFile_thenOk() throws Exception {
-        File file = fileService.create(FileGenerator.randomMultipartJpeg());
-        ok(get(file.getId()));
+        Long fileId = getFileId(ok(create(FileGenerator.randomMultipartJpeg())));
+        ok(get(fileId));
     }
 
     @Test
     void whenDeleteFile_thenOk() throws Exception {
-        File file = fileService.create(FileGenerator.randomMultipartJpeg());
-        ok(delete(file.getId()));
+        Long fileId = getFileId(ok(create(FileGenerator.randomMultipartJpeg())));
+        ok(delete(fileId));
     }
 
     @Test
@@ -107,6 +107,11 @@ class FileRestControllerTest {
     private void assertErrorMessage(ResultActions resultActions, String errorMessageTemplate, Object argument)
             throws Exception {
         resultActions.andExpect(jsonPath("$.message", is(String.format(errorMessageTemplate, argument))));
+    }
+
+    private Long getFileId(ResultActions resultActions) throws Exception {
+        byte[] content = resultActions.andReturn().getResponse().getContentAsByteArray();
+        return objectMapper.readValue(content, FileDto.class).getId();
     }
 
 }

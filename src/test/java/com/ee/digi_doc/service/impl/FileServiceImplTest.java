@@ -1,6 +1,6 @@
 package com.ee.digi_doc.service.impl;
 
-import com.ee.digi_doc.common.properties.FileStorageProperties;
+import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.InvalidFileNameException;
 import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.persistance.dao.FileRepository;
@@ -40,11 +40,11 @@ class FileServiceImplTest {
     private FileRepository repository;
 
     @Autowired
-    private FileStorageProperties fileStorageProperties;
+    private StorageProperties storageProperties;
 
     @Test
     void whenCreateFile_thenOk() {
-        Path filesDirectoryPath = Paths.get(fileStorageProperties.getDirectory()).toAbsolutePath().normalize();
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
 
         MockMultipartFile expectedMultipartFile = FileGenerator.randomMultipartJpeg();
         File actualFile = service.create(expectedMultipartFile);
@@ -65,7 +65,7 @@ class FileServiceImplTest {
 
     @Test
     void whenGetFile_thenOk() {
-        Path filesDirectoryPath = Paths.get(fileStorageProperties.getDirectory()).toAbsolutePath().normalize();
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
 
         File expectedFile = service.create(FileGenerator.randomMultipartJpeg());
 
@@ -88,7 +88,7 @@ class FileServiceImplTest {
 
     @Test
     void whenDeleteFile_thenOk() {
-        Path filesDirectoryPath = Paths.get(fileStorageProperties.getDirectory()).toAbsolutePath().normalize();
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
 
         File createdFile = service.create(FileGenerator.randomMultipartJpeg());
 
@@ -116,7 +116,7 @@ class FileServiceImplTest {
 
     @Test
     void givenFileNameLengthLargeThan20_whenCreate_thenExceptionThrown() {
-        Path filesDirectoryPath = Paths.get(fileStorageProperties.getDirectory()).toAbsolutePath().normalize();
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
 
         String fileName = randomAlphabetic(21);
         MockMultipartFile multipartFile = FileGenerator.randomMultipartJpeg(fileName);

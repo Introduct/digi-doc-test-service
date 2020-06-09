@@ -1,6 +1,6 @@
 package com.ee.digi_doc.service.impl;
 
-import com.ee.digi_doc.common.properties.FileStorageProperties;
+import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.*;
 import com.ee.digi_doc.persistance.dao.FileRepository;
 import com.ee.digi_doc.persistance.model.File;
@@ -24,9 +24,9 @@ public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final Path fileStorageLocation;
 
-    public FileServiceImpl(FileRepository fileRepository, FileStorageProperties fileStorageProperties) {
+    public FileServiceImpl(FileRepository fileRepository, StorageProperties storageProperties) {
         this.fileRepository = fileRepository;
-        this.fileStorageLocation = Paths.get(fileStorageProperties.getDirectory()).toAbsolutePath().normalize();
+        this.fileStorageLocation = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
     }
 
     @PostConstruct

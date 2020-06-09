@@ -20,5 +20,8 @@ springdoc:
   swagger-ui:
     path: /api-documentation.html
 
-file:
-  directory: /var/files
+storage:
+  file:
+    path: /var/files
+  container:
+    path: /var/containers

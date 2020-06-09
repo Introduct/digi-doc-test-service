@@ -13,5 +13,8 @@ spring:
       path: /databace-console
       enabled: true
 
-file:
-  directory: ./var/files
+storage:
+  file:
+    path: ./var/files
+  container:
+    path: ./var/containers
