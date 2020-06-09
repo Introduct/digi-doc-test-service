@@ -1,4 +1,4 @@
-package com.ee.digi_doc.service.impl;
+package com.ee.digi_doc.service;
 
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.InvalidFileNameException;
@@ -28,12 +28,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-class FileServiceImplTest {
+class FileServiceTest {
 
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
     @Autowired
-    @Qualifier("fileServiceImpl")
     private FileService service;
 
     @Autowired
@@ -51,16 +50,16 @@ class FileServiceImplTest {
 
         assertNotNull(actualFile);
         assertNotNull(actualFile.getId());
-        assertNotNull(actualFile.getFileName());
+        assertNotNull(actualFile.getName());
         assertNotNull(actualFile.getContentType());
         assertNotNull(actualFile.getUploadedOn());
 
-        assertEquals(expectedMultipartFile.getOriginalFilename(), actualFile.getFileName());
+        assertEquals(expectedMultipartFile.getOriginalFilename(), actualFile.getName());
         assertEquals(expectedMultipartFile.getContentType(), actualFile.getContentType());
         assertEquals(now().format(DATE_TIME_FORMATTER), actualFile.getUploadedOn().format(DATE_TIME_FORMATTER));
 
         assertTrue(repository.findById(actualFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(actualFile.getFileName())));
+        assertTrue(Files.exists(filesDirectoryPath.resolve(actualFile.getName())));
     }
 
     @Test
@@ -70,18 +69,18 @@ class FileServiceImplTest {
         File expectedFile = service.create(FileGenerator.randomMultipartJpeg());
 
         assertTrue(repository.findById(expectedFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(expectedFile.getFileName())));
+        assertTrue(Files.exists(filesDirectoryPath.resolve(expectedFile.getName())));
 
         File actualFile = service.get(expectedFile.getId());
 
         assertNotNull(actualFile);
         assertNotNull(actualFile.getId());
-        assertNotNull(actualFile.getFileName());
+        assertNotNull(actualFile.getName());
         assertNotNull(actualFile.getContentType());
         assertNotNull(actualFile.getUploadedOn());
         assertNotNull(actualFile.getContent());
 
-        assertEquals(expectedFile.getFileName(), actualFile.getFileName());
+        assertEquals(expectedFile.getName(), actualFile.getName());
         assertEquals(expectedFile.getContentType(), actualFile.getContentType());
         assertEquals(expectedFile.getUploadedOn(), actualFile.getUploadedOn());
     }
@@ -93,12 +92,12 @@ class FileServiceImplTest {
         File createdFile = service.create(FileGenerator.randomMultipartJpeg());
 
         assertTrue(repository.findById(createdFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(createdFile.getFileName())));
+        assertTrue(Files.exists(filesDirectoryPath.resolve(createdFile.getName())));
 
         service.delete(createdFile.getId());
 
         assertTrue(repository.findById(createdFile.getId()).isEmpty());
-        assertTrue(Files.notExists(filesDirectoryPath.resolve(createdFile.getFileName())));
+        assertTrue(Files.notExists(filesDirectoryPath.resolve(createdFile.getName())));
     }
 
     @Test
@@ -125,7 +124,7 @@ class FileServiceImplTest {
                 () -> service.create(multipartFile));
 
         assertNotNull(exception.getRootCause());
-        assertTrue(exception.getRootCause().getMessage().contains("Value too long for column \"FILE_NAME VARCHAR(20)\""));
+        assertTrue(exception.getRootCause().getMessage().contains("Value too long for column \"NAME VARCHAR(20)\""));
 
         assertNotNull(multipartFile.getOriginalFilename());
         assertTrue(Files.notExists(filesDirectoryPath.resolve(multipartFile.getOriginalFilename())));

@@ -28,6 +28,7 @@
 
         <maven.dependency.mapstruct.version>1.3.1.Final</maven.dependency.mapstruct.version>
         <maven.dependency.springdoc-openapi.version>1.2.32</maven.dependency.springdoc-openapi.version>
+        <maven.dependency.digi-doc.version>4.0.0</maven.dependency.digi-doc.version>
     </properties>
 
     <repositories>
@@ -139,6 +140,12 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>${maven.dependency.springdoc-openapi.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.digidoc4j</groupId>
+            <artifactId>digidoc4j</artifactId>
+            <version>${maven.dependency.digi-doc.version}</version>
         </dependency>
 
     </dependencies>

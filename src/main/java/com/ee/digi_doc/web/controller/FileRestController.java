@@ -1,4 +1,4 @@
-package com.ee.digi_doc.web;
+package com.ee.digi_doc.web.controller;
 
 import com.ee.digi_doc.mapper.FileMapper;
 import com.ee.digi_doc.persistance.model.File;
@@ -36,7 +36,7 @@ public class FileRestController {
         File file = fileService.get(id);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getContentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getFileName())
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName())
                 .body(file.getContent());
     }
 

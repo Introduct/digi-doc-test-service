@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(of = "id")
-public class FileDto {
+public class ContainerDto {
 
     private Long id;
 
@@ -15,8 +15,8 @@ public class FileDto {
 
     private String url;
 
-    private String contentType;
+    private LocalDateTime createdOn;
 
-    private LocalDateTime uploadedOn;
+    private String signatureInHex;
 
 }

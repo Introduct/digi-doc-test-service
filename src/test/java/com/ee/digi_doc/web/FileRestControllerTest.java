@@ -95,8 +95,8 @@ class FileRestControllerTest {
 
     private void assertFile(ResultActions resultActions, MockMultipartFile mockMultipartFile) throws Exception {
         resultActions.andExpect(jsonPath("$.id", is(notNullValue())))
-                .andExpect(jsonPath("$.fileName", is(notNullValue())))
-                .andExpect(jsonPath("$.fileName", is(mockMultipartFile.getOriginalFilename())))
+                .andExpect(jsonPath("$.name", is(notNullValue())))
+                .andExpect(jsonPath("$.name", is(mockMultipartFile.getOriginalFilename())))
                 .andExpect(jsonPath("$.contentType", is(notNullValue())))
                 .andExpect(jsonPath("$.contentType", is(mockMultipartFile.getContentType())))
                 .andExpect(jsonPath("$.uploadedOn", is(notNullValue())))

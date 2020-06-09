@@ -30,13 +30,13 @@ class FileMapperTest {
 
         assertNotNull(target);
         assertNotNull(target.getId());
-        assertNotNull(target.getFileName());
+        assertNotNull(target.getName());
         assertNotNull(target.getContentType());
         assertNotNull(target.getUploadedOn());
         assertNotNull(target.getUrl());
 
         assertEquals(source.getId(), target.getId());
-        assertEquals(source.getFileName(), target.getFileName());
+        assertEquals(source.getName(), target.getName());
         assertEquals(source.getContentType(), target.getContentType());
         assertEquals(source.getUploadedOn(), target.getUploadedOn());
         assertEquals("/api/v1/files/" + source.getId(), target.getUrl());

@@ -9,8 +9,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
-@Data
 @Entity
+@Data
+@EqualsAndHashCode(of = "id")
 @ToString(exclude = "content")
 public class File {
 
@@ -20,7 +21,10 @@ public class File {
     private Long id;
 
     @Column(nullable = false, length = 20)
-    private String fileName;
+    private String name;
+
+    @Transient
+    private byte[] content;
 
     @Column(nullable = false, length = 20)
     private String contentType;
@@ -28,9 +32,6 @@ public class File {
     @Column(nullable = false, updatable = false)
     @Setter(AccessLevel.PRIVATE)
     private LocalDateTime uploadedOn;
-
-    @Transient
-    private byte[] content;
 
     @PrePersist
     public void prePersist() {
@@ -42,7 +43,7 @@ public class File {
     public static File of(MultipartFile multipartFile) {
         File file = new File();
 
-        file.setFileName(getFileName(multipartFile.getOriginalFilename()));
+        file.setName(getFileName(multipartFile.getOriginalFilename()));
         file.setContentType(multipartFile.getContentType());
         file.setContent(multipartFile.getBytes());
 

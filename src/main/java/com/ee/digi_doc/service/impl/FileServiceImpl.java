@@ -1,7 +1,10 @@
 package com.ee.digi_doc.service.impl;
 
 import com.ee.digi_doc.common.properties.StorageProperties;
-import com.ee.digi_doc.exception.*;
+import com.ee.digi_doc.exception.FileNotDeletedException;
+import com.ee.digi_doc.exception.FileNotReadException;
+import com.ee.digi_doc.exception.FileNotWrittenException;
+import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.persistance.dao.FileRepository;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.service.FileService;
@@ -51,11 +54,11 @@ public class FileServiceImpl implements FileService {
         log.info("Create file: {}", file);
 
         try {
-            Files.write(fileStorageLocation.resolve(file.getFileName()), file.getContent());
+            Files.write(fileStorageLocation.resolve(file.getName()), file.getContent());
             log.debug("File has been successfully written");
         } catch (IOException e) {
             log.error("Exception obtained during file write", e);
-            throw new FileNotWrittenException(file.getFileName());
+            throw new FileNotWrittenException(file.getName());
         }
 
         return file;
@@ -68,12 +71,12 @@ public class FileServiceImpl implements FileService {
         File file = fileRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
         log.debug("File has been found in database, file: {}", file);
 
-        Path filePath = fileStorageLocation.resolve(file.getFileName()).normalize();
+        Path filePath = fileStorageLocation.resolve(file.getName()).normalize();
         log.debug("File path: {}", filePath.toAbsolutePath());
 
-        if (!Files.exists(filePath)) {
-            log.debug("File does not exist on the hard disk, file name: {}", file.getFileName());
-            throw new FileNotFoundException(file.getFileName());
+        if (Files.notExists(filePath)) {
+            log.debug("File does not exist on the hard disk, file name: {}", file.getName());
+            throw new ResourceNotFoundException(file.getName());
         }
 
         try {
@@ -81,7 +84,7 @@ public class FileServiceImpl implements FileService {
             return file;
         } catch (IOException e) {
             log.error("Exception obtained during file read", e);
-            throw new FileNotReadException(file.getFileName());
+            throw new FileNotReadException(file.getName());
         }
     }
 
@@ -93,12 +96,12 @@ public class FileServiceImpl implements FileService {
         File file = fileRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
         log.debug("File has been found in database, file: {}", file);
 
-        Path filePath = fileStorageLocation.resolve(file.getFileName()).normalize();
+        Path filePath = fileStorageLocation.resolve(file.getName()).normalize();
         log.debug("File path: {}", filePath.toAbsolutePath());
 
         if (!Files.exists(filePath)) {
-            log.debug("File does not exist on the hard disk, file name: {}", file.getFileName());
-            throw new FileNotFoundException(file.getFileName());
+            log.debug("File does not exist on the hard disk, file name: {}", file.getName());
+            throw new ResourceNotFoundException(file.getName());
         }
 
         fileRepository.delete(file);
@@ -109,7 +112,7 @@ public class FileServiceImpl implements FileService {
             log.info("File has been deleted from hard disk");
         } catch (IOException e) {
             log.error("Exception obtained during file delete", e);
-            throw new FileNotDeletedException(file.getFileName());
+            throw new FileNotDeletedException(file.getName());
         }
     }
 
