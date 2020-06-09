@@ -26,7 +26,9 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,7 +71,11 @@ public class ContainerServiceImpl implements ContainerService {
     public Container create(CreateContainerRequest request) {
         log.info("Create container: {}", request);
 
-        List<File> files = Stream.of(request.getFileIds()).map(fileService::get).collect(Collectors.toList());
+        List<File> files = Stream.of(request.getFileIds())
+                .map(fileService::get)
+                .flatMap(Optional::stream)
+                .collect(Collectors.toList());
+
         log.debug("Files to be signed: {}", files);
 
         FileSigner.SigningData signingData = fileSigner.generateDataToSign(files, request.getCertificateInHex());

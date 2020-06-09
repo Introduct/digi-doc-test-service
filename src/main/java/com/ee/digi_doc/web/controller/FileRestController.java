@@ -1,5 +1,6 @@
 package com.ee.digi_doc.web.controller;
 
+import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.mapper.FileMapper;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.service.FileService;
@@ -33,7 +34,7 @@ public class FileRestController {
 
     @GetMapping("/{id}")
     public ResponseEntity<byte[]> get(@PathVariable Long id) {
-        File file = fileService.get(id);
+        File file = fileService.get(id).orElseThrow(() -> new ResourceNotFoundException(id));
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getContentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file.getName())

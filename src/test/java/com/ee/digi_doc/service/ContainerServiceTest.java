@@ -2,7 +2,7 @@ package com.ee.digi_doc.service;
 
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.ContainerRepository;
-import com.ee.digi_doc.persistance.dao.FileRepository;
+import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.util.FileGenerator;
@@ -44,7 +44,7 @@ class ContainerServiceTest {
     private ContainerRepository containerRepository;
 
     @Autowired
-    private FileRepository fileRepository;
+    private JpaFileRepository jpaFileRepository;
 
     @Autowired
     private StorageProperties storageProperties;
@@ -72,7 +72,7 @@ class ContainerServiceTest {
         assertTrue(containerRepository.findById(container.getId()).isPresent());
         assertTrue(Files.exists(containerDirectoryPath.resolve(container.getName())));
 
-        assertTrue(fileRepository.findAllById(Stream.of(request.getFileIds()).collect(Collectors.toList())).isEmpty());
+        assertTrue(jpaFileRepository.findAllById(Stream.of(request.getFileIds()).collect(Collectors.toList())).isEmpty());
         for (File file : files) {
             assertTrue(Files.notExists(fileDirectoryPath.resolve(file.getName())));
         }

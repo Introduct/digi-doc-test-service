@@ -3,14 +3,12 @@ package com.ee.digi_doc.service;
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.InvalidFileNameException;
 import com.ee.digi_doc.exception.ResourceNotFoundException;
-import com.ee.digi_doc.persistance.dao.FileRepository;
+import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.model.File;
-import com.ee.digi_doc.service.FileService;
 import com.ee.digi_doc.util.FileGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.mock.web.MockMultipartFile;
@@ -36,7 +34,7 @@ class FileServiceTest {
     private FileService service;
 
     @Autowired
-    private FileRepository repository;
+    private JpaFileRepository repository;
 
     @Autowired
     private StorageProperties storageProperties;
@@ -71,7 +69,7 @@ class FileServiceTest {
         assertTrue(repository.findById(expectedFile.getId()).isPresent());
         assertTrue(Files.exists(filesDirectoryPath.resolve(expectedFile.getName())));
 
-        File actualFile = service.get(expectedFile.getId());
+        File actualFile = service.get(expectedFile.getId()).orElse(null);
 
         assertNotNull(actualFile);
         assertNotNull(actualFile.getId());
@@ -106,11 +104,6 @@ class FileServiceTest {
             String fileName = randomAlphabetic(10) + ".";
             service.create(FileGenerator.randomMultipartJpeg(fileName));
         });
-    }
-
-    @Test
-    void givenFileNowExistsInDatabase_whenGet_thenExceptionThrown() {
-        assertThrows(ResourceNotFoundException.class, () -> service.get(Long.valueOf(randomNumeric(5))));
     }
 
     @Test

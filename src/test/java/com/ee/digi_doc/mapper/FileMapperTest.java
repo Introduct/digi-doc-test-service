@@ -1,6 +1,6 @@
 package com.ee.digi_doc.mapper;
 
-import com.ee.digi_doc.persistance.dao.FileRepository;
+import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.web.dto.FileDto;
@@ -21,11 +21,11 @@ class FileMapperTest {
     private FileMapper mapper;
 
     @Autowired
-    private FileRepository fileRepository;
+    private JpaFileRepository jpaFileRepository;
 
     @Test
     void toDtoTest() {
-        File source = fileRepository.save(File.of(FileGenerator.randomMultipartJpeg()));
+        File source = jpaFileRepository.save(File.of(FileGenerator.randomMultipartJpeg()));
         FileDto target = mapper.toDto(source);
 
         assertNotNull(target);
