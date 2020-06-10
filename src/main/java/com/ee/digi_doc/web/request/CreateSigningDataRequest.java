@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 @Data
 @RequiredArgsConstructor
 @ToString(exclude = "certificateInHex")
-public class CreateContainerRequest {
+public class CreateSigningDataRequest {
 
     @NotEmpty
     private Long[] fileIds;

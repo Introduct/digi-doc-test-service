@@ -2,8 +2,10 @@ package com.ee.digi_doc.service.impl;
 
 import com.ee.digi_doc.common.properties.Digidoc4jProperties;
 import com.ee.digi_doc.persistance.model.File;
+import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.service.FileSigner;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.digidoc4j.*;
 import org.digidoc4j.impl.asic.asice.bdoc.BDocContainerBuilder;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class FileSignerImpl implements FileSigner {
+
+    private static final String DATA_TO_SIGN_FILE_EXTENSION = "bin";
 
     private final DigestAlgorithm algorithm;
     private final Configuration configuration;
@@ -38,7 +42,13 @@ public class FileSignerImpl implements FileSigner {
 
         DataToSign dataToSign = createDataToSign(container, certificateInHex);
 
-        return new SigningData(container, dataToSign);
+        SigningData signingData = new SigningData();
+        signingData.setContainerName(generateContainerName());
+        signingData.setContainer(container);
+        signingData.setDataToSignName(generateDataToSignName());
+        signingData.setDataToSign(dataToSign);
+
+        return signingData;
     }
 
     private org.digidoc4j.Container createContainer(Collection<DataFile> dataFiles) {
@@ -65,5 +75,17 @@ public class FileSignerImpl implements FileSigner {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(inStream);
         }
+    }
+
+    private String generateContainerName() {
+        return generateName(Container.DocumentType.BDOC.name().toLowerCase());
+    }
+
+    private String generateDataToSignName() {
+        return generateName(DATA_TO_SIGN_FILE_EXTENSION);
+    }
+
+    private String generateName(String fileExtension) {
+        return RandomStringUtils.randomAlphabetic(10) + "." + fileExtension;
     }
 }
