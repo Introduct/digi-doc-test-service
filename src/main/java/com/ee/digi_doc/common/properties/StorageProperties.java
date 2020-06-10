@@ -11,6 +11,7 @@ public class StorageProperties {
 
     private File file = new File();
     private Container container = new Container();
+    private SigningData signingData = new SigningData();
 
     @Getter
     @Setter
@@ -21,6 +22,12 @@ public class StorageProperties {
     @Getter
     @Setter
     public static class Container {
+        private String path;
+    }
+
+    @Getter
+    @Setter
+    public static class SigningData {
         private String path;
     }
 

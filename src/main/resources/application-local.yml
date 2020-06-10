@@ -18,3 +18,5 @@ storage:
     path: ./var/files
   container:
     path: ./var/containers
+  signing-data:
+    path: ./var/tmp

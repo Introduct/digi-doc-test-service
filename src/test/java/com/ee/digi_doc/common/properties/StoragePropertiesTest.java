@@ -15,6 +15,7 @@ class StoragePropertiesTest {
 
     public static final String EXPECTED_FILE_STORAGE_LOCATION = "./var/files";
     public static final String EXPECTED_CONTAINER_STORAGE_LOCATION = "./var/containers";
+    public static final String EXPECTED_SIGNING_DATA_STORAGE_LOCATION = "./var/tmp";
 
     @Autowired
     private StorageProperties storageProperties;
@@ -33,6 +34,14 @@ class StoragePropertiesTest {
         assertNotNull(storageProperties.getContainer());
         assertNotNull(storageProperties.getContainer().getPath());
         assertEquals(EXPECTED_CONTAINER_STORAGE_LOCATION, storageProperties.getContainer().getPath());
+    }
+
+    @Test
+    void testSigningDataStorageLocation() {
+        assertNotNull(storageProperties);
+        assertNotNull(storageProperties.getSigningData());
+        assertNotNull(storageProperties.getSigningData().getPath());
+        assertEquals(EXPECTED_SIGNING_DATA_STORAGE_LOCATION, storageProperties.getSigningData().getPath());
     }
 
 }
