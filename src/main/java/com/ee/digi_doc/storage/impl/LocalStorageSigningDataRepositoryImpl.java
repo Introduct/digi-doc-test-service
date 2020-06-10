@@ -2,6 +2,7 @@ package com.ee.digi_doc.storage.impl;
 
 import com.ee.digi_doc.common.properties.Digidoc4jProperties;
 import com.ee.digi_doc.common.properties.StorageProperties;
+import com.ee.digi_doc.exception.FileNotDeletedException;
 import com.ee.digi_doc.exception.FileNotReadException;
 import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.persistance.model.SigningData;
@@ -81,6 +82,28 @@ public class LocalStorageSigningDataRepositoryImpl implements LocalStorageSignin
         } catch (IOException | ClassNotFoundException e) {
             log.error("Error obtained during data to sign read", e);
             throw new FileNotReadException(dataToSignName);
+        }
+    }
+
+    @Override
+    public void deleteContainer(String containerName) {
+        try {
+            Path containerPath = signingDataStorageLocation.resolve(containerName).normalize();
+            Files.delete(containerPath);
+        } catch (IOException e) {
+            log.error("Error obtained during container delete: " + containerName, e);
+            throw new FileNotDeletedException(containerName);
+        }
+    }
+
+    @Override
+    public void deleteDataToSigh(String dataToSignName) {
+        try {
+            Path dataToSignPath = signingDataStorageLocation.resolve(dataToSignName).normalize();
+            Files.delete(dataToSignPath);
+        } catch (IOException e) {
+            log.error("Error obtained during data to sign delete: " + dataToSignName, e);
+            throw new FileNotDeletedException(dataToSignName);
         }
     }
 }

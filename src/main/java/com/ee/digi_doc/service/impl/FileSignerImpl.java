@@ -51,6 +51,24 @@ public class FileSignerImpl implements FileSigner {
         return signingData;
     }
 
+    @Override
+    public com.ee.digi_doc.persistance.model.Container signContainer(SigningData signingData, String signatureInHex) {
+        Signature signature = signingData.getDataToSign().finalize(DatatypeConverter.parseHexBinary(signatureInHex));
+        signingData.getContainer().addSignature(signature);
+
+        com.ee.digi_doc.persistance.model.Container container = new com.ee.digi_doc.persistance.model.Container();
+
+        container.setName(signingData.getContainerName());
+        container.setBdDocContainer(signingData.getContainer());
+        container.setContentType(getContentType());
+
+        return container;
+    }
+
+    private String getContentType() {
+        return "application/vnd.etsi.asic-e+zip";
+    }
+
     private org.digidoc4j.Container createContainer(Collection<DataFile> dataFiles) {
         var builder = BDocContainerBuilder
                 .aContainer()

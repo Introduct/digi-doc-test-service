@@ -12,4 +12,6 @@ public interface SigningDataService {
 
     Optional<SigningData> getSigningData(@NotNull Long id);
 
+    void delete(@NotNull Long id);
+
 }
