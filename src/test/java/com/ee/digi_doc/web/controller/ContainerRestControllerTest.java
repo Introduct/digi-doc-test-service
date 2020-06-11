@@ -41,6 +41,12 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
                 notSignedContainerId);
     }
 
+    @Test
+    void givenContainerSigned_whenValidate_thenOk() throws Exception {
+        ContainerDto containerDto = retrieveContainerDto(ok(signContainer(createSignContainerRequest())));
+        assertValidateResult(ok(validateContainer(containerDto.getId())));
+    }
+
     private ResultActions signContainer(@NotNull SignContainerRequest request) throws Exception {
         return postJson("/containers", request);
     }
@@ -49,12 +55,26 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
         return get("/containers/" + id);
     }
 
+    private ResultActions validateContainer(@NotNull Long id) throws Exception {
+        return get("/containers/" + id + "/validate");
+    }
+
     private void assertContainer(ResultActions resultActions) throws Exception {
         resultActions.andExpect(jsonPath("$.id", is(notNullValue())))
                 .andExpect(jsonPath("$.name", is(notNullValue())))
                 .andExpect(jsonPath("$.signedOn", is(notNullValue())))
                 .andExpect(jsonPath("$.url", is(notNullValue())))
                 .andExpect(jsonPath("$.url", is(startsWith("/api/v1/containers/"))));
+    }
+
+    private void assertValidateResult(ResultActions resultActions) throws Exception {
+        resultActions.andExpect(jsonPath("$.valid", is(notNullValue())))
+                .andExpect(jsonPath("$.valid", is(true)))
+                .andExpect(jsonPath("$.signerIdCode", is(notNullValue())))
+                .andExpect(jsonPath("$.signerFirstName", is(notNullValue())))
+                .andExpect(jsonPath("$.signerLastName", is(notNullValue())))
+                .andExpect(jsonPath("$.signerCountryCode", is(notNullValue())))
+                .andExpect(jsonPath("$.signedOn", is(notNullValue())));
     }
 
     private SignContainerRequest createSignContainerRequest() throws Exception {

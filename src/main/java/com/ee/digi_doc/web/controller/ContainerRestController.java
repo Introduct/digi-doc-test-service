@@ -5,6 +5,7 @@ import com.ee.digi_doc.mapper.ContainerMapper;
 import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.service.ContainerService;
 import com.ee.digi_doc.web.dto.ContainerDto;
+import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.SignContainerRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,12 @@ public class ContainerRestController {
                 .contentType(MediaType.parseMediaType(container.getContentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + container.getName())
                 .body(container.getContent());
+    }
+
+    @GetMapping("/{id}/validate")
+    public ValidateContainerResultDto validate(@PathVariable Long id) {
+        return containerService.validateContainer(id)
+                .orElseThrow(() -> new ResourceNotFoundException(id));
     }
 
 }

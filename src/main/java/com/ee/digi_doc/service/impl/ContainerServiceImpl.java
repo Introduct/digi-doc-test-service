@@ -8,13 +8,24 @@ import com.ee.digi_doc.service.ContainerService;
 import com.ee.digi_doc.service.FileSigner;
 import com.ee.digi_doc.service.SigningDataService;
 import com.ee.digi_doc.storage.LocalStorageContainerRepository;
+import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.SignContainerRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.digidoc4j.Signature;
+import org.digidoc4j.ValidationResult;
+import org.digidoc4j.X509Cert;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Optional;
+
+import static org.digidoc4j.X509Cert.SubjectName.*;
 
 @Slf4j
 @Service
@@ -59,5 +70,30 @@ public class ContainerServiceImpl implements ContainerService {
                     log.debug("DBDoc container has been found in local storage");
                     return container;
                 });
+    }
+
+    @Override
+    public Optional<ValidateContainerResultDto> validateContainer(@NotNull Long id) {
+        return get(id)
+                .map(Container::getBdDocContainer)
+                .map(org.digidoc4j.Container::getSignatures)
+                .map(Collection::iterator)
+                .filter(Iterator::hasNext)
+                .map(Iterator::next)
+                .map(this::createValidateResult);
+    }
+
+    private ValidateContainerResultDto createValidateResult(Signature signature) {
+        LocalDateTime signedOn = signature.getClaimedSigningTime().toInstant()
+                .atZone(ZoneId.systemDefault()).toLocalDateTime();
+        ValidationResult validationResult = signature.validateSignature();
+        boolean valid = validationResult.isValid();
+        X509Cert signingCertificate = signature.getSigningCertificate();
+        String signerIdCode = signingCertificate.getSubjectName(SERIALNUMBER);
+        String signerFirstName = signingCertificate.getSubjectName(GIVENNAME);
+        String signerLastName = signingCertificate.getSubjectName(SURNAME);
+        String signerCountryCode = signingCertificate.getSubjectName(C);
+        return new ValidateContainerResultDto(valid, signerIdCode, signerFirstName, signerLastName,
+                signerCountryCode, signedOn);
     }
 }

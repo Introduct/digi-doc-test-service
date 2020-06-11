@@ -6,6 +6,7 @@ import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.util.TestSigningData;
+import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
 import org.digidoc4j.DigestAlgorithm;
@@ -109,6 +110,34 @@ class ContainerServiceTest {
         assertEquals(signingData.getContainerName(), container.getName());
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
         assertEquals(now().format(DATE_TIME_FORMATTER), container.getSignedOn().format(DATE_TIME_FORMATTER));
+    }
+
+    @Test
+    void whenValidContainer_thenOk() {
+        CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
+        createDataToSignRequest.setFileIds(createFileIds().toArray(Long[]::new));
+        createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
+
+        SigningData signingData = signingDataService.create(createDataToSignRequest);
+
+        String signatureInHex = TestSigningData.rsaSignData(signingData.getDataToSign(), DigestAlgorithm.SHA256);
+
+        SignContainerRequest signContainerRequest = new SignContainerRequest();
+        signContainerRequest.setSigningDataId(signingData.getId());
+        signContainerRequest.setSignatureInHex(signatureInHex);
+
+        Long containerId = containerService.signContainer(signContainerRequest).getId();
+
+        ValidateContainerResultDto result = containerService.validateContainer(containerId).orElse(null);
+
+        assertNotNull(result);
+        assertNotNull(result.getSignerIdCode());
+        assertNotNull(result.getSignerFirstName());
+        assertNotNull(result.getSignerLastName());
+        assertNotNull(result.getSignerCountryCode());
+        assertNotNull(result.getSignedOn());
+
+        assertTrue(result.isValid());
     }
 
     private List<Long> createFileIds() {
