@@ -47,6 +47,33 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
         assertValidateResult(ok(validateContainer(containerDto.getId())));
     }
 
+    @Test
+    void givenSigningDataIdNull_whenSIgnContainer_thenBadRequest() throws Exception {
+        SignContainerRequest request = createSignContainerRequest();
+        request.setSigningDataId(null);
+
+        assertFieldError(badRequest(signContainer(request)), "NotNull", "signingDataId",
+                "must not be null");
+    }
+
+    @Test
+    void givenSignatureInHexNull_whenSIgnContainer_thenBadRequest() throws Exception {
+        SignContainerRequest request = createSignContainerRequest();
+        request.setSignatureInHex(null);
+
+        assertFieldError(badRequest(signContainer(request)), "NotEmpty", "signatureInHex",
+                "must not be empty");
+    }
+
+    @Test
+    void givenSignatureInHexEmpty_whenSIgnContainer_thenBadRequest() throws Exception {
+        SignContainerRequest request = createSignContainerRequest();
+        request.setSignatureInHex("");
+
+        assertFieldError(badRequest(signContainer(request)), "NotEmpty", "signatureInHex",
+                "must not be empty");
+    }
+
     private ResultActions signContainer(@NotNull SignContainerRequest request) throws Exception {
         return postJson("/containers", request);
     }

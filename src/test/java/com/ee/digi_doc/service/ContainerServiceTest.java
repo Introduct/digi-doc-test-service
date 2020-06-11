@@ -53,7 +53,7 @@ class ContainerServiceTest {
         Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
 
         CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
-        createDataToSignRequest.setFileIds(createFileIds().toArray(Long[]::new));
+        createDataToSignRequest.setFileIds(createFileIds());
         createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
 
         SigningData signingData = signingDataService.create(createDataToSignRequest);
@@ -86,7 +86,7 @@ class ContainerServiceTest {
     @Test
     void whenGetSignedContainer_thenOk() {
         CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
-        createDataToSignRequest.setFileIds(createFileIds().toArray(Long[]::new));
+        createDataToSignRequest.setFileIds(createFileIds());
         createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
 
         SigningData signingData = signingDataService.create(createDataToSignRequest);
@@ -115,7 +115,7 @@ class ContainerServiceTest {
     @Test
     void whenValidContainer_thenOk() {
         CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
-        createDataToSignRequest.setFileIds(createFileIds().toArray(Long[]::new));
+        createDataToSignRequest.setFileIds(createFileIds());
         createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
 
         SigningData signingData = signingDataService.create(createDataToSignRequest);

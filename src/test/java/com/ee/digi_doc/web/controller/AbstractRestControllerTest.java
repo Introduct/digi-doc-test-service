@@ -74,7 +74,15 @@ public abstract class AbstractRestControllerTest {
 
     protected final void assertErrorMessage(ResultActions resultActions, String errorMessageTemplate, Object argument)
             throws Exception {
-        resultActions.andExpect(jsonPath("$.message", is(String.format(errorMessageTemplate, argument))));
+        resultActions.andExpect(jsonPath("$.errorMessage", is(String.format(errorMessageTemplate, argument))));
+    }
+
+    protected final void assertFieldError(ResultActions resultActions, String error, String field, String message)
+            throws Exception {
+        resultActions
+                .andExpect(jsonPath("errors[0].error", is(error)))
+                .andExpect(jsonPath("errors[0].message", is(message)))
+                .andExpect(jsonPath("errors[0].field", is(field)));
     }
 
     protected final Long getFileId(ResultActions resultActions) throws Exception {
@@ -98,7 +106,7 @@ public abstract class AbstractRestControllerTest {
         }
 
         CreateSigningDataRequest request = new CreateSigningDataRequest();
-        request.setFileIds(fileIds.toArray(Long[]::new));
+        request.setFileIds(fileIds);
         request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
         return request;
     }

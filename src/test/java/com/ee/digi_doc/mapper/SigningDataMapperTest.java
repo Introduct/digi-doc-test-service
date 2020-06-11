@@ -54,12 +54,12 @@ class SigningDataMapperTest {
         assertEquals(source.getSignatureInHex(), target.getSignatureInHex());
     }
 
-    private Long[] createFiles() {
+    private List<Long> createFiles() {
         List<Long> fileIds = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             fileIds.add(fileService.create(FileGenerator.randomMultipartJpeg()).getId());
         }
-        return fileIds.toArray(Long[]::new);
+        return fileIds;
     }
 
 }

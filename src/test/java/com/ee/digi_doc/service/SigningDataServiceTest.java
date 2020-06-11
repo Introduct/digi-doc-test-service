@@ -56,7 +56,7 @@ class SigningDataServiceTest {
         List<Long> fileIds = filesToSign.stream().map(File::getId).collect(Collectors.toList());
 
         CreateSigningDataRequest request = new CreateSigningDataRequest();
-        request.setFileIds(fileIds.toArray(Long[]::new));
+        request.setFileIds(fileIds);
         request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
 
         SigningData signingData = signingDataService.create(request);
@@ -88,7 +88,7 @@ class SigningDataServiceTest {
     @Test
     void whenGetDataToSign_thenOk() {
         CreateSigningDataRequest request = new CreateSigningDataRequest();
-        request.setFileIds(createFiles().stream().map(File::getId).collect(Collectors.toList()).toArray(Long[]::new));
+        request.setFileIds(createFiles().stream().map(File::getId).collect(Collectors.toList()));
         request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
 
         Long signingDataId = signingDataService.create(request).getId();
@@ -116,7 +116,7 @@ class SigningDataServiceTest {
         List<Long> fileIds = createFiles().stream().map(File::getId).collect(Collectors.toList());
 
         CreateSigningDataRequest request = new CreateSigningDataRequest();
-        request.setFileIds(fileIds.toArray(Long[]::new));
+        request.setFileIds(fileIds);
         request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
 
         SigningData signingData = signingDataService.create(request);

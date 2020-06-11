@@ -14,11 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -33,9 +31,9 @@ public class SigningDataServiceImpl implements SigningDataService {
     @Override
     @Transactional
     public SigningData create(CreateSigningDataRequest request) {
-        log.info("Create data to sign for files: {}", Arrays.toString(request.getFileIds()));
+        log.info("Create data to sign for files: {}", request.getFileIds());
 
-        List<File> filesToSign = Stream.of(request.getFileIds())
+        List<File> filesToSign = request.getFileIds().stream()
                 .map(fileService::get)
                 .flatMap(Optional::stream)
                 .collect(Collectors.toList());
