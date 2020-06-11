@@ -19,18 +19,18 @@ class FileRestControllerTest extends AbstractRestControllerTest {
     @Test
     void whenCreateFile_thenOk() throws Exception {
         MockMultipartFile mockMultipartFile = FileGenerator.randomMultipartJpeg();
-        assertFile(ok(create(mockMultipartFile)), mockMultipartFile);
+        assertFile(ok(createFile(mockMultipartFile)), mockMultipartFile);
     }
 
     @Test
     void whenGetFile_thenOk() throws Exception {
-        Long fileId = getFileId(ok(create(FileGenerator.randomMultipartJpeg())));
+        Long fileId = getFileId(ok(createFile(FileGenerator.randomMultipartJpeg())));
         ok(get(fileId));
     }
 
     @Test
     void whenDeleteFile_thenOk() throws Exception {
-        Long fileId = getFileId(ok(create(FileGenerator.randomMultipartJpeg())));
+        Long fileId = getFileId(ok(createFile(FileGenerator.randomMultipartJpeg())));
         ok(delete(fileId));
     }
 
@@ -39,7 +39,7 @@ class FileRestControllerTest extends AbstractRestControllerTest {
         String invalidFileName = randomAlphabetic(10) + ".";
 
         MockMultipartFile multipartFile = FileGenerator.randomMultipartJpeg(invalidFileName);
-        assertErrorMessage(badRequest(create(multipartFile)), INVALID_FILE_NAME_TEMPLATE,
+        assertErrorMessage(badRequest(createFile(multipartFile)), INVALID_FILE_NAME_TEMPLATE,
                 multipartFile.getOriginalFilename());
     }
 
@@ -47,10 +47,6 @@ class FileRestControllerTest extends AbstractRestControllerTest {
     void givenFileNowExistsInDatabase_whenGet_thenNotFound() throws Exception {
         Long notExistingFileId = Long.valueOf(randomNumeric(3));
         assertErrorMessage(notFound(get(notExistingFileId)), RESOURCE_NOT_FOUND_TEMPLATE, notExistingFileId);
-    }
-
-    private ResultActions create(MockMultipartFile multipartFile) throws Exception {
-        return multiPart("/files", multipartFile);
     }
 
     private ResultActions get(@NotNull Long id) throws Exception {

@@ -1,16 +1,10 @@
 package com.ee.digi_doc.web.controller;
 
-import com.ee.digi_doc.util.FileGenerator;
-import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.dto.SigningDataDto;
-import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.is;
@@ -37,14 +31,6 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
                 notExistingSigningDataId);
     }
 
-    private ResultActions createFile(MockMultipartFile multipartFile) throws Exception {
-        return multiPart("/files", multipartFile);
-    }
-
-    private ResultActions createSigningData(CreateSigningDataRequest request) throws Exception {
-        return postJson("/signing-data", request);
-    }
-
     private ResultActions getSigningData(@NotNull Long id) throws Exception {
         return get("/signing-data/" + id);
     }
@@ -61,24 +47,6 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
                 .andExpect(jsonPath("$.containerName", is(expectedSigningData.getContainerName())))
                 .andExpect(jsonPath("$.dataToSignName", is(expectedSigningData.getDataToSignName())))
                 .andExpect(jsonPath("$.signatureInHex", is(expectedSigningData.getSignatureInHex())));
-    }
-
-    private CreateSigningDataRequest createSigningDataRequest() throws Exception {
-        List<Long> fileIds = new ArrayList<>();
-
-        for (int i = 0; i < 10; i++) {
-            fileIds.add(getFileId(ok(createFile(FileGenerator.randomMultipartJpeg()))));
-        }
-
-        CreateSigningDataRequest request = new CreateSigningDataRequest();
-        request.setFileIds(fileIds.toArray(Long[]::new));
-        request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
-        return request;
-    }
-
-    private SigningDataDto retrieveSigningDataDto(ResultActions resultActions) throws Exception {
-        byte[] content = resultActions.andReturn().getResponse().getContentAsByteArray();
-        return objectMapper.readValue(content, SigningDataDto.class);
     }
 
 }
