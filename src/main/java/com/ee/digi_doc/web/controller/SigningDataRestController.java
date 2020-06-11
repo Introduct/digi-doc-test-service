@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -21,13 +23,13 @@ public class SigningDataRestController {
     private final SigningDataService signingDataService;
     private final SigningDataMapper signingDataMapper;
 
-    @PostMapping
+    @PostMapping(produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
     public SigningDataDto createSigningData(@Valid @RequestBody CreateSigningDataRequest request) {
         SigningData signingData = signingDataService.create(request);
         return signingDataMapper.toDto(signingData);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = APPLICATION_JSON_VALUE)
     public SigningDataDto getSigningData(@PathVariable Long id) {
         return signingDataService.getSigningData(id)
                 .map(signingDataMapper::toDto)

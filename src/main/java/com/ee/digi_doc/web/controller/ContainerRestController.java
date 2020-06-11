@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -25,7 +27,7 @@ public class ContainerRestController {
     private final ContainerService containerService;
     private final ContainerMapper containerMapper;
 
-    @PostMapping
+    @PostMapping(produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
     public ContainerDto signContainer(@Valid @RequestBody SignContainerRequest request) {
         Container container = containerService.signContainer(request);
         return containerMapper.toDto(container);
@@ -40,7 +42,7 @@ public class ContainerRestController {
                 .body(container.getContent());
     }
 
-    @GetMapping("/{id}/validate")
+    @GetMapping(value = "/{id}/validate", produces = APPLICATION_JSON_VALUE)
     public ValidateContainerResultDto validate(@PathVariable Long id) {
         return containerService.validateContainer(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
