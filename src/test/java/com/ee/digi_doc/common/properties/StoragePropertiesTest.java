@@ -13,9 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest
 class StoragePropertiesTest {
 
-    public static final String EXPECTED_FILE_STORAGE_LOCATION = "./var/files";
-    public static final String EXPECTED_CONTAINER_STORAGE_LOCATION = "./var/containers";
-    public static final String EXPECTED_SIGNING_DATA_STORAGE_LOCATION = "./var/tmp";
+    public static final String EXPECTED_FILE_STORAGE_LOCATION = "./var/digi-doc-service/files";
+    public static final String EXPECTED_CONTAINER_STORAGE_LOCATION = "./var/digi-doc-service/containers";
+    public static final String EXPECTED_SIGNING_DATA_STORAGE_LOCATION = "./var/digi-doc-service/tmp";
 
     @Autowired
     private StorageProperties storageProperties;

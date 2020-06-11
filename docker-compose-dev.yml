@@ -27,7 +27,7 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile-local
+      dockerfile: Dockerfile
     environment:
       - PROFILE=dev
       - SERVER_PORT=${SERVER_PORT:-8080}
@@ -45,7 +45,10 @@ services:
     ports:
       - 8080:8080
     volumes:
-      - files:/var/files
+      - files:/var/digi-doc-service/files
+      - container:/var/digi-doc-service/containers
+      - signing-data:/var/digi-doc-service/tmp
+      - ./config/909.p12d:/var/909.p12d
     networks:
       dogi-doc-network:
         aliases:
@@ -54,6 +57,8 @@ services:
 volumes:
   database:
   files:
+  container:
+  signing-data:
 
 networks:
   dogi-doc-network:

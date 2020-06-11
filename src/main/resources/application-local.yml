@@ -15,8 +15,8 @@ spring:
 
 storage:
   file:
-    path: ./var/files
+    path: ./var/digi-doc-service/files
   container:
-    path: ./var/containers
+    path: ./var/digi-doc-service/containers
   signing-data:
-    path: ./var/tmp
+    path: ./var/digi-doc-service/tmp

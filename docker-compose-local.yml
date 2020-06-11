@@ -6,7 +6,7 @@ services:
     image: digi-doc-test-service:latest
     build:
       context: .
-      dockerfile: Dockerfile-local
+      dockerfile: Dockerfile
     environment:
       - PROFILE=local
       - LOG_LEVEL=info
