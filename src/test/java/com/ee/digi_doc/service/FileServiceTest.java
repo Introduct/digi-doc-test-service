@@ -2,7 +2,6 @@ package com.ee.digi_doc.service;
 
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.InvalidFileNameException;
-import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.util.FileGenerator;
@@ -21,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 
 import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)

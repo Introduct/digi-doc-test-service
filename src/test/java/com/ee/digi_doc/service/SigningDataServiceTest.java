@@ -109,6 +109,25 @@ class SigningDataServiceTest {
         assertEquals(now().format(DATE_TIME_FORMATTER), signingData.getCreatedOn().format(DATE_TIME_FORMATTER));
     }
 
+    @Test
+    void whenDeleteDataToSign_thenOK() {
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+
+        List<Long> fileIds = createFiles().stream().map(File::getId).collect(Collectors.toList());
+
+        CreateSigningDataRequest request = new CreateSigningDataRequest();
+        request.setFileIds(fileIds.toArray(Long[]::new));
+        request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
+
+        SigningData signingData = signingDataService.create(request);
+
+        signingDataService.delete(signingData.getId());
+
+        assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isEmpty());
+        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(signingData.getContainerName())));
+        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(signingData.getDataToSignName())));
+    }
+
     private List<File> createFiles() {
         List<File> files = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
