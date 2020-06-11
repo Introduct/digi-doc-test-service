@@ -60,9 +60,10 @@ class ContainerServiceTest {
         String signatureInHex = TestSigningData.rsaSignData(signingData.getDataToSign(), DigestAlgorithm.SHA256);
 
         SignContainerRequest signContainerRequest = new SignContainerRequest();
+        signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Container container = containerService.signContainer(signingData.getId(), signContainerRequest);
+        Container container = containerService.signContainer(signContainerRequest);
 
         assertNotNull(container);
         assertNotNull(container.getId());
@@ -92,9 +93,10 @@ class ContainerServiceTest {
         String signatureInHex = TestSigningData.rsaSignData(signingData.getDataToSign(), DigestAlgorithm.SHA256);
 
         SignContainerRequest signContainerRequest = new SignContainerRequest();
+        signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Long containerId = containerService.signContainer(signingData.getId(), signContainerRequest).getId();
+        Long containerId = containerService.signContainer(signContainerRequest).getId();
 
         Container container = containerService.get(containerId).orElse(null);
 

@@ -28,11 +28,11 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container signContainer(Long signingDataId, SignContainerRequest request) {
-        log.info("Sign container by data to sign id: {}", signingDataId);
+    public Container signContainer(SignContainerRequest request) {
+        log.info("Sign container by data to sign id: {}", request.getSigningDataId());
 
-        SigningData signingData = signingDataService.getSigningData(signingDataId)
-                .orElseThrow(() -> new ResourceNotFoundException(signingDataId));
+        SigningData signingData = signingDataService.getSigningData(request.getSigningDataId())
+                .orElseThrow(() -> new ResourceNotFoundException(request.getSigningDataId()));
         log.debug("Data to sigh: {}", signingData);
 
         Container container = fileSigner.signContainer(signingData, request.getSignatureInHex());
