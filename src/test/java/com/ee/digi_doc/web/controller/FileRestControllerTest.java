@@ -1,4 +1,4 @@
-package com.ee.digi_doc.web;
+package com.ee.digi_doc.web.controller;
 
 import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.web.dto.FileDto;
@@ -27,8 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 class FileRestControllerTest {
 
-    public static final String INVALID_FILE_NAME_TEMPLATE = "Invalid file name %s.";
-    public static final String DATABASE_FILE_NOT_FOUND_TEMPLATE = "File with id %s has not been found in database.";
+    private static final String INVALID_FILE_NAME_TEMPLATE = "Invalid file name %s.";
+    private static final String RESOURCE_NOT_FOUND_TEMPLATE = "Resource with id %s has not been found.";
 
     @Autowired
     private MockMvc mvc;
@@ -66,7 +66,7 @@ class FileRestControllerTest {
     @Test
     void givenFileNowExistsInDatabase_whenGet_thenNotFound() throws Exception {
         Long notExistingFileId = Long.valueOf(randomNumeric(3));
-        assertErrorMessage(notFound(get(notExistingFileId)), DATABASE_FILE_NOT_FOUND_TEMPLATE, notExistingFileId);
+        assertErrorMessage(notFound(get(notExistingFileId)), RESOURCE_NOT_FOUND_TEMPLATE, notExistingFileId);
     }
 
     private ResultActions ok(ResultActions resultActions) throws Exception {
