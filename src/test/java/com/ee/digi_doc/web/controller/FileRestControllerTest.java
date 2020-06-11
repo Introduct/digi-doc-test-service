@@ -1,18 +1,9 @@
 package com.ee.digi_doc.web.controller;
 
 import com.ee.digi_doc.util.FileGenerator;
-import com.ee.digi_doc.web.dto.FileDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.validation.constraints.NotNull;
 
@@ -20,21 +11,10 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
-@AutoConfigureMockMvc
-@SpringBootTest
-class FileRestControllerTest {
+class FileRestControllerTest extends AbstractRestControllerTest {
 
     private static final String INVALID_FILE_NAME_TEMPLATE = "Invalid file name %s.";
-    private static final String RESOURCE_NOT_FOUND_TEMPLATE = "Resource with id %s has not been found.";
-
-    @Autowired
-    private MockMvc mvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     void whenCreateFile_thenOk() throws Exception {
@@ -69,28 +49,16 @@ class FileRestControllerTest {
         assertErrorMessage(notFound(get(notExistingFileId)), RESOURCE_NOT_FOUND_TEMPLATE, notExistingFileId);
     }
 
-    private ResultActions ok(ResultActions resultActions) throws Exception {
-        return resultActions.andExpect(status().isOk());
-    }
-
-    private ResultActions badRequest(ResultActions resultActions) throws Exception {
-        return resultActions.andExpect(status().isBadRequest());
-    }
-
-    private ResultActions notFound(ResultActions resultActions) throws Exception {
-        return resultActions.andExpect(status().isNotFound());
-    }
-
     private ResultActions create(MockMultipartFile multipartFile) throws Exception {
-        return mvc.perform(MockMvcRequestBuilders.multipart("/files").file(multipartFile));
+        return multiPart("/files", multipartFile);
     }
 
     private ResultActions get(@NotNull Long id) throws Exception {
-        return mvc.perform(MockMvcRequestBuilders.get("/files/" + id));
+        return get("/files/" + id);
     }
 
     private ResultActions delete(@NotNull Long id) throws Exception {
-        return mvc.perform(MockMvcRequestBuilders.delete("/files/" + id));
+        return delete("/files/" + id);
     }
 
     private void assertFile(ResultActions resultActions, MockMultipartFile mockMultipartFile) throws Exception {
@@ -102,16 +70,6 @@ class FileRestControllerTest {
                 .andExpect(jsonPath("$.uploadedOn", is(notNullValue())))
                 .andExpect(jsonPath("$.url", is(notNullValue())))
                 .andExpect(jsonPath("$.url", is(startsWith("/api/v1/files/"))));
-    }
-
-    private void assertErrorMessage(ResultActions resultActions, String errorMessageTemplate, Object argument)
-            throws Exception {
-        resultActions.andExpect(jsonPath("$.message", is(String.format(errorMessageTemplate, argument))));
-    }
-
-    private Long getFileId(ResultActions resultActions) throws Exception {
-        byte[] content = resultActions.andReturn().getResponse().getContentAsByteArray();
-        return objectMapper.readValue(content, FileDto.class).getId();
     }
 
 }
