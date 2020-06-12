@@ -15,4 +15,6 @@ public interface ContainerService {
 
     Optional<ValidateContainerResultDto> validateContainer(@NotNull Long id);
 
+    void delete(Container container);
+
 }

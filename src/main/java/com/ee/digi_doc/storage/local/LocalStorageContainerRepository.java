@@ -1,11 +1,12 @@
-package com.ee.digi_doc.storage.impl;
+package com.ee.digi_doc.storage.local;
 
 import com.ee.digi_doc.common.properties.Digidoc4jProperties;
 import com.ee.digi_doc.common.properties.StorageProperties;
+import com.ee.digi_doc.exception.FileNotDeletedException;
 import com.ee.digi_doc.exception.FileNotReadException;
 import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.persistance.model.Container;
-import com.ee.digi_doc.storage.LocalStorageContainerRepository;
+import com.ee.digi_doc.storage.StorageContainerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.impl.asic.asice.bdoc.BDocContainerBuilder;
@@ -19,21 +20,21 @@ import java.nio.file.Paths;
 
 @Slf4j
 @Repository
-public class LocalStorageContainerRepositoryImpl implements LocalStorageContainerRepository {
+public class LocalStorageContainerRepository implements StorageContainerRepository {
 
-    private final Path signingDataStorageLocation;
+    private final Path containerStorageLocation;
     private final Configuration configuration;
 
-    public LocalStorageContainerRepositoryImpl(StorageProperties storageProperties, Digidoc4jProperties properties) {
-        this.signingDataStorageLocation = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
+    public LocalStorageContainerRepository(StorageProperties storageProperties, Digidoc4jProperties properties) {
+        this.containerStorageLocation = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
         this.configuration = new Configuration(properties.getMode());
     }
 
     @PostConstruct
     public void init() {
-        if (Files.notExists(signingDataStorageLocation)) {
+        if (Files.notExists(containerStorageLocation)) {
             try {
-                Files.createDirectories(signingDataStorageLocation);
+                Files.createDirectories(containerStorageLocation);
             } catch (IOException e) {
                 throw new RuntimeException("Could not create directory for container", e);
             }
@@ -42,7 +43,7 @@ public class LocalStorageContainerRepositoryImpl implements LocalStorageContaine
 
     @Override
     public void storeContainer(Container container) {
-        Path containerPath = signingDataStorageLocation.resolve(container.getName()).normalize();
+        Path containerPath = containerStorageLocation.resolve(container.getName()).normalize();
         try (OutputStream outputStream = new FileOutputStream(containerPath.toFile())) {
             container.getBdDocContainer().save(outputStream);
         } catch (IOException e) {
@@ -53,12 +54,23 @@ public class LocalStorageContainerRepositoryImpl implements LocalStorageContaine
 
     @Override
     public org.digidoc4j.Container getContainer(String containerName) {
-        Path containerPath = signingDataStorageLocation.resolve(containerName).normalize();
+        Path containerPath = containerStorageLocation.resolve(containerName).normalize();
         try (InputStream inputStream = new FileInputStream(containerPath.toFile())) {
             return BDocContainerBuilder.aContainer().fromStream(inputStream).withConfiguration(configuration).build();
         } catch (IOException e) {
             log.error("Error obtained during container read", e);
             throw new FileNotReadException(containerName);
+        }
+    }
+
+    @Override
+    public void deleteContainer(String containerName) {
+        try {
+            Path containerPath = containerStorageLocation.resolve(containerName).normalize();
+            Files.delete(containerPath);
+        } catch (IOException e) {
+            log.error("Error obtained during container delete: " + containerName, e);
+            throw new FileNotDeletedException(containerName);
         }
     }
 }

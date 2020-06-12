@@ -1,4 +1,4 @@
-package com.ee.digi_doc.storage.impl;
+package com.ee.digi_doc.storage.local;
 
 import com.ee.digi_doc.common.properties.Digidoc4jProperties;
 import com.ee.digi_doc.common.properties.StorageProperties;
@@ -6,7 +6,7 @@ import com.ee.digi_doc.exception.FileNotDeletedException;
 import com.ee.digi_doc.exception.FileNotReadException;
 import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.persistance.model.SigningData;
-import com.ee.digi_doc.storage.LocalStorageSigningDataRepository;
+import com.ee.digi_doc.storage.StorageSigningDataRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Container;
@@ -22,12 +22,12 @@ import java.nio.file.Paths;
 
 @Slf4j
 @Repository
-public class LocalStorageSigningDataRepositoryImpl implements LocalStorageSigningDataRepository {
+public class LocalStorageSigningDataRepository implements StorageSigningDataRepository {
 
     private final Path signingDataStorageLocation;
     private final Configuration configuration;
 
-    public LocalStorageSigningDataRepositoryImpl(StorageProperties storageProperties, Digidoc4jProperties properties) {
+    public LocalStorageSigningDataRepository(StorageProperties storageProperties, Digidoc4jProperties properties) {
         this.signingDataStorageLocation = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
         this.configuration = new Configuration(properties.getMode());
     }

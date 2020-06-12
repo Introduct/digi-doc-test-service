@@ -1,4 +1,4 @@
-package com.ee.digi_doc.storage.impl;
+package com.ee.digi_doc.storage.local;
 
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.FileNotDeletedException;
@@ -6,7 +6,7 @@ import com.ee.digi_doc.exception.FileNotReadException;
 import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.persistance.model.File;
-import com.ee.digi_doc.storage.LocalStorageFileRepository;
+import com.ee.digi_doc.storage.StorageFileRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -19,11 +19,11 @@ import java.util.Optional;
 
 @Slf4j
 @Repository
-public class LocalStorageFileRepositoryImpl implements LocalStorageFileRepository {
+public class LocalStorageFileRepository implements StorageFileRepository {
 
     private final Path fileStorageLocation;
 
-    public LocalStorageFileRepositoryImpl(StorageProperties storageProperties) {
+    public LocalStorageFileRepository(StorageProperties storageProperties) {
         this.fileStorageLocation = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
     }
 

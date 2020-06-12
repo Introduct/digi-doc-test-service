@@ -140,6 +140,33 @@ class ContainerServiceTest {
         assertTrue(result.isValid());
     }
 
+    @Test
+    void whenDeleteContainer_thenOk() {
+        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
+
+        CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
+        createDataToSignRequest.setFileIds(createFileIds());
+        createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
+
+        SigningData signingData = signingDataService.create(createDataToSignRequest);
+
+        String signatureInHex = TestSigningData.rsaSignData(signingData.getDataToSign(), DigestAlgorithm.SHA256);
+
+        SignContainerRequest signContainerRequest = new SignContainerRequest();
+        signContainerRequest.setSigningDataId(signingData.getId());
+        signContainerRequest.setSignatureInHex(signatureInHex);
+
+        Container container = containerService.signContainer(signContainerRequest);
+
+        assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
+        assertTrue(Files.exists(containerDirectoryPath.resolve(container.getName())));
+
+        containerService.delete(container);
+
+        assertTrue(jpaContainerRepository.findById(container.getId()).isEmpty());
+        assertTrue(Files.notExists(containerDirectoryPath.resolve(container.getName())));
+    }
+
     private List<Long> createFileIds() {
         List<Long> files = new ArrayList<>();
         for (int i = 0; i < 10; i++) {

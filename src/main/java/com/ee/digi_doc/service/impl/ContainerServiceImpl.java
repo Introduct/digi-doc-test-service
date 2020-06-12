@@ -7,7 +7,7 @@ import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.service.ContainerService;
 import com.ee.digi_doc.service.FileSigner;
 import com.ee.digi_doc.service.SigningDataService;
-import com.ee.digi_doc.storage.LocalStorageContainerRepository;
+import com.ee.digi_doc.storage.StorageContainerRepository;
 import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.SignContainerRequest;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ import static org.digidoc4j.X509Cert.SubjectName.*;
 public class ContainerServiceImpl implements ContainerService {
 
     private final JpaContainerRepository jpaContainerRepository;
-    private final LocalStorageContainerRepository localStorageContainerRepository;
+    private final StorageContainerRepository storageContainerRepository;
     private final SigningDataService signingDataService;
     private final FileSigner fileSigner;
 
@@ -52,10 +52,10 @@ public class ContainerServiceImpl implements ContainerService {
         container = jpaContainerRepository.saveAndFlush(container);
         log.debug("Container has been saved in database");
 
-        localStorageContainerRepository.storeContainer(container);
+        storageContainerRepository.storeContainer(container);
         log.debug("Container has been stored to local storage");
 
-        signingDataService.delete(signingData.getId());
+        signingDataService.delete(signingData);
 
         return container;
     }
@@ -66,7 +66,7 @@ public class ContainerServiceImpl implements ContainerService {
         return jpaContainerRepository.findById(id)
                 .map(container -> {
                     log.debug("Container has been found in database");
-                    container.setBdDocContainer(localStorageContainerRepository.getContainer(container.getName()));
+                    container.setBdDocContainer(storageContainerRepository.getContainer(container.getName()));
                     log.debug("DBDoc container has been found in local storage");
                     return container;
                 });
@@ -81,6 +81,18 @@ public class ContainerServiceImpl implements ContainerService {
                 .filter(Iterator::hasNext)
                 .map(Iterator::next)
                 .map(this::createValidateResult);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Container container) {
+        log.info("Delete container: {}", container);
+
+        jpaContainerRepository.delete(container);
+        log.debug("Container has been removed from database");
+
+        storageContainerRepository.deleteContainer(container.getName());
+        log.debug("Container has been removed from local storage");
     }
 
     private ValidateContainerResultDto createValidateResult(Signature signature) {

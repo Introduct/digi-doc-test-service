@@ -82,7 +82,7 @@ class FileServiceTest {
     }
 
     @Test
-    void whenDeleteFile_thenOk() {
+    void whenDeleteFileById_thenOk() {
         Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
 
         File createdFile = service.create(FileGenerator.randomMultipartJpeg());
@@ -91,6 +91,21 @@ class FileServiceTest {
         assertTrue(Files.exists(filesDirectoryPath.resolve(createdFile.getName())));
 
         service.delete(createdFile.getId());
+
+        assertTrue(repository.findById(createdFile.getId()).isEmpty());
+        assertTrue(Files.notExists(filesDirectoryPath.resolve(createdFile.getName())));
+    }
+
+    @Test
+    void whenDeleteFIle_thenOk() {
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
+
+        File createdFile = service.create(FileGenerator.randomMultipartJpeg());
+
+        assertTrue(repository.findById(createdFile.getId()).isPresent());
+        assertTrue(Files.exists(filesDirectoryPath.resolve(createdFile.getName())));
+
+        service.delete(createdFile);
 
         assertTrue(repository.findById(createdFile.getId()).isEmpty());
         assertTrue(Files.notExists(filesDirectoryPath.resolve(createdFile.getName())));

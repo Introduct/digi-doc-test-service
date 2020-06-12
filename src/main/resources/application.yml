@@ -27,3 +27,6 @@ storage:
     path: /var/digi-doc-service/containers
   signing-data:
     path: /var/digi-doc-service/tmp
+
+cleanup:
+  cron.expression: "0 0 0/1 * * ?" # every hour

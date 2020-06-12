@@ -35,9 +35,8 @@ public class File {
 
     @PrePersist
     public void prePersist() {
-        uploadedOn = LocalDateTime.now();
+        setUploadedOn(LocalDateTime.now());
     }
-
 
     @SneakyThrows
     public static File of(MultipartFile multipartFile) {

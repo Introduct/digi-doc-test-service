@@ -14,4 +14,6 @@ public interface FileService {
 
     void delete(@NotNull Long id);
 
+    void delete(File file);
+
 }

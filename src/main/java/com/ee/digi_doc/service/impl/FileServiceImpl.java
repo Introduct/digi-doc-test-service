@@ -3,7 +3,7 @@ package com.ee.digi_doc.service.impl;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.service.FileService;
-import com.ee.digi_doc.storage.LocalStorageFileRepository;
+import com.ee.digi_doc.storage.StorageFileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +19,7 @@ import java.util.Optional;
 public class FileServiceImpl implements FileService {
 
     private final JpaFileRepository jpaFileRepository;
-    private final LocalStorageFileRepository localStorageFileRepository;
+    private final StorageFileRepository storageFileRepository;
 
     @Override
     @Transactional
@@ -30,7 +30,7 @@ public class FileServiceImpl implements FileService {
         File file = jpaFileRepository.saveAndFlush(File.of(multipartFile));
         log.debug("File has been successfully created in database, file: {}", file);
 
-        localStorageFileRepository.storeFile(file);
+        storageFileRepository.storeFile(file);
         log.debug("File has been successfully saved in local storage, file: {}", file);
 
         return file;
@@ -42,7 +42,7 @@ public class FileServiceImpl implements FileService {
         return jpaFileRepository.findById(id)
                 .flatMap(file -> {
                     log.debug("File has been found in database, file: {}", file);
-                    return localStorageFileRepository.getFileContent(file.getName())
+                    return storageFileRepository.getFileContent(file.getName())
                             .map(bytes -> {
                                 log.debug("File content has been found in local storage");
                                 file.setContent(bytes);
@@ -57,11 +57,23 @@ public class FileServiceImpl implements FileService {
         log.info("Delete file by id: {}", id);
         jpaFileRepository.findById(id)
                 .ifPresent(file -> {
+                    log.debug("File has been found in database, file: {}", file);
                     jpaFileRepository.delete(file);
                     log.info("File has been deleted from database");
-                    localStorageFileRepository.deleteFile(file.getName());
+                    storageFileRepository.deleteFile(file.getName());
                     log.info("File has been deleted from local storage");
                 });
+    }
+
+    @Override
+    public void delete(File file) {
+        log.info("Delete file: {}", file);
+
+        jpaFileRepository.delete(file);
+        log.info("File has been deleted from database");
+
+        storageFileRepository.deleteFile(file.getName());
+        log.info("File has been deleted from local storage");
     }
 
 }

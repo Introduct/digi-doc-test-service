@@ -4,7 +4,7 @@ import com.ee.digi_doc.persistance.model.SigningData;
 import org.digidoc4j.Container;
 import org.digidoc4j.DataToSign;
 
-public interface LocalStorageSigningDataRepository {
+public interface StorageSigningDataRepository {
 
     void storeSigningData(SigningData signingData);
 

@@ -4,7 +4,7 @@ import com.ee.digi_doc.persistance.model.File;
 
 import java.util.Optional;
 
-public interface LocalStorageFileRepository {
+public interface StorageFileRepository {
 
     void storeFile(File file);
 

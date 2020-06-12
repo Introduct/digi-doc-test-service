@@ -40,7 +40,7 @@ public class SigningData {
 
     @PrePersist
     public void prePersist() {
-        createdOn = LocalDateTime.now();
+        setCreatedOn(LocalDateTime.now());
     }
 
     public String getSignatureInHex() {

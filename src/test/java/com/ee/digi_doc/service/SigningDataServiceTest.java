@@ -121,7 +121,7 @@ class SigningDataServiceTest {
 
         SigningData signingData = signingDataService.create(request);
 
-        signingDataService.delete(signingData.getId());
+        signingDataService.delete(signingData);
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isEmpty());
         assertTrue(Files.notExists(signingDataDirectoryPath.resolve(signingData.getContainerName())));

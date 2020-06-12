@@ -6,7 +6,7 @@ import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.service.FileService;
 import com.ee.digi_doc.service.FileSigner;
 import com.ee.digi_doc.service.SigningDataService;
-import com.ee.digi_doc.storage.LocalStorageSigningDataRepository;
+import com.ee.digi_doc.storage.StorageSigningDataRepository;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class SigningDataServiceImpl implements SigningDataService {
 
     private final JpaSigningDataRepository jpaSigningDataRepository;
-    private final LocalStorageSigningDataRepository localStorageSigningDataRepository;
+    private final StorageSigningDataRepository storageSigningDataRepository;
     private final FileService fileService;
     private final FileSigner fileSigner;
 
@@ -43,7 +43,7 @@ public class SigningDataServiceImpl implements SigningDataService {
         signingData = jpaSigningDataRepository.saveAndFlush(signingData);
         log.debug("Data to sign: {}", signingData);
 
-        localStorageSigningDataRepository.storeSigningData(signingData);
+        storageSigningDataRepository.storeSigningData(signingData);
         log.debug("Data to sigh has been stored to local storage");
 
         filesToSign.stream().map(File::getId).forEach(fileService::delete);
@@ -59,10 +59,10 @@ public class SigningDataServiceImpl implements SigningDataService {
                 .map(signingData -> {
                     log.debug("Data to sign has been found in database");
 
-                    signingData.setContainer(localStorageSigningDataRepository.getContainer(signingData.getContainerName()));
+                    signingData.setContainer(storageSigningDataRepository.getContainer(signingData.getContainerName()));
                     log.debug("DBDoc container has been found in local storage");
 
-                    signingData.setDataToSign(localStorageSigningDataRepository.getDataToSign(signingData.getDataToSignName()));
+                    signingData.setDataToSign(storageSigningDataRepository.getDataToSign(signingData.getDataToSignName()));
                     log.debug("Data to sign has been found in local storage");
 
                     return signingData;
@@ -70,18 +70,17 @@ public class SigningDataServiceImpl implements SigningDataService {
     }
 
     @Override
-    public void delete(@NotNull Long id) {
-        log.info("Delete data to sign by id: {}", id);
-        jpaSigningDataRepository.findById(id)
-                .ifPresent(signingData -> {
-                    log.debug("Data to sign has been found in database");
-                    jpaSigningDataRepository.delete(signingData);
-                    log.debug("Data to sign has been removed from database");
-                    localStorageSigningDataRepository.deleteContainer(signingData.getContainerName());
-                    log.debug("Container has been removed from local storage");
-                    localStorageSigningDataRepository.deleteDataToSigh(signingData.getDataToSignName());
-                    log.debug("Data to sigh has been removed from local storage");
-                });
+    public void delete(SigningData signingData) {
+        log.info("Delete data to sign: {}", signingData);
+
+        jpaSigningDataRepository.delete(signingData);
+        log.debug("Data to sign has been removed from database");
+
+        storageSigningDataRepository.deleteContainer(signingData.getContainerName());
+        log.debug("Container has been removed from local storage");
+
+        storageSigningDataRepository.deleteDataToSigh(signingData.getDataToSignName());
+        log.debug("Data to sigh has been removed from local storage");
     }
 
 }

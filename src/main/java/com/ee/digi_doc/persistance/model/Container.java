@@ -30,7 +30,7 @@ public class Container {
 
     @PrePersist
     public void prePersist() {
-        signedOn = LocalDateTime.now();
+        setSignedOn(LocalDateTime.now());
     }
 
     @SneakyThrows
