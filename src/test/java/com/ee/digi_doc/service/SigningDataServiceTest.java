@@ -12,25 +12,26 @@ import org.digidoc4j.Container;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.time.LocalDateTime.now;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class SigningDataServiceTest {
 
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+    @Value("${test.file.number:10}")
+    private int fileNumber;
 
     @Autowired
     private SigningDataService signingDataService;
@@ -71,7 +72,6 @@ class SigningDataServiceTest {
 
         assertTrue(signingData.getContainerName().endsWith("." + Container.DocumentType.BDOC.name().toLowerCase()));
         assertTrue(signingData.getDataToSignName().endsWith(".bin"));
-        assertEquals(now().format(DATE_TIME_FORMATTER), signingData.getCreatedOn().format(DATE_TIME_FORMATTER));
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isPresent());
 
@@ -106,7 +106,6 @@ class SigningDataServiceTest {
 
         assertTrue(signingData.getContainerName().endsWith("." + Container.DocumentType.BDOC.name().toLowerCase()));
         assertTrue(signingData.getDataToSignName().endsWith(".bin"));
-        assertEquals(now().format(DATE_TIME_FORMATTER), signingData.getCreatedOn().format(DATE_TIME_FORMATTER));
     }
 
     @Test
@@ -130,7 +129,7 @@ class SigningDataServiceTest {
 
     private List<File> createFiles() {
         List<File> files = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < fileNumber; i++) {
             files.add(fileService.create(FileGenerator.randomMultipartJpeg()));
         }
         return files;

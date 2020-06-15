@@ -10,8 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -43,7 +42,11 @@ class ContainerMapperTest {
         assertEquals(source.getName(), target.getName());
         assertEquals(source.getSignedOn(), target.getSignedOn());
         assertEquals("/api/v1/containers/" + source.getId(), target.getUrl());
+    }
 
+    @Test
+    void givenInputNull_whenToDto_thenOutputNull() {
+        assertNull(mapper.toDto(null));
     }
 
 }

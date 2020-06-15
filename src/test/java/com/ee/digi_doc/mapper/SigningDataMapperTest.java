@@ -10,18 +10,21 @@ import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class SigningDataMapperTest {
+
+    @Value("${test.file.number:10}")
+    private int fileNumber;
 
     @Autowired
     private SigningDataMapper mapper;
@@ -54,9 +57,14 @@ class SigningDataMapperTest {
         assertEquals(source.getSignatureInHex(), target.getSignatureInHex());
     }
 
+    @Test
+    void givenInputNull_whenToDto_thenOutputNull() {
+        assertNull(mapper.toDto(null));
+    }
+
     private List<Long> createFiles() {
         List<Long> fileIds = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < fileNumber; i++) {
             fileIds.add(fileService.create(FileGenerator.randomMultipartJpeg()).getId());
         }
         return fileIds;

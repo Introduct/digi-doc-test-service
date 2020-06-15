@@ -1,9 +1,7 @@
 package com.ee.digi_doc.service.impl;
 
-import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.Container;
-import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.service.ContainerService;
 import com.ee.digi_doc.service.FileSigner;
 import com.ee.digi_doc.service.SigningDataService;
@@ -39,25 +37,25 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container signContainer(SignContainerRequest request) {
+    public Optional<Container> signContainer(SignContainerRequest request) {
         log.info("Sign container by data to sign id: {}", request.getSigningDataId());
+        return signingDataService.getSigningData(request.getSigningDataId())
+                .map(signingData -> {
+                    log.debug("Data to sigh: {}", signingData);
 
-        SigningData signingData = signingDataService.getSigningData(request.getSigningDataId())
-                .orElseThrow(() -> new ResourceNotFoundException(request.getSigningDataId()));
-        log.debug("Data to sigh: {}", signingData);
+                    Container container = fileSigner.signContainer(signingData, request.getSignatureInHex());
+                    log.debug("Container has been signed, container: {}", container);
 
-        Container container = fileSigner.signContainer(signingData, request.getSignatureInHex());
-        log.debug("Container has been signed, container: {}", container);
+                    container = jpaContainerRepository.saveAndFlush(container);
+                    log.debug("Container has been saved in database");
 
-        container = jpaContainerRepository.saveAndFlush(container);
-        log.debug("Container has been saved in database");
+                    storageContainerRepository.storeContainer(container);
+                    log.debug("Container has been stored to local storage");
 
-        storageContainerRepository.storeContainer(container);
-        log.debug("Container has been stored to local storage");
+                    signingDataService.delete(signingData);
 
-        signingDataService.delete(signingData);
-
-        return container;
+                    return container;
+                });
     }
 
     @Override

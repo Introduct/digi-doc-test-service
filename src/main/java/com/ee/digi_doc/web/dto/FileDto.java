@@ -1,10 +1,12 @@
 package com.ee.digi_doc.web.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 public class FileDto {
 
     private Long id;

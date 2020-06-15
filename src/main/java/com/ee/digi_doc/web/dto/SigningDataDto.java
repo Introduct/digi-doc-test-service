@@ -1,8 +1,10 @@
 package com.ee.digi_doc.web.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class SigningDataDto {
 
     private Long id;

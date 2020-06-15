@@ -29,8 +29,9 @@ public class ContainerRestController {
 
     @PostMapping(produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
     public ContainerDto signContainer(@Valid @RequestBody SignContainerRequest request) {
-        Container container = containerService.signContainer(request);
-        return containerMapper.toDto(container);
+        return containerService.signContainer(request)
+                .map(containerMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException(request.getSigningDataId()));
     }
 
     @GetMapping("/{id}")

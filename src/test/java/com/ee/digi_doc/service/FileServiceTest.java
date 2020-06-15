@@ -16,17 +16,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
 
-import static java.time.LocalDateTime.now;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class FileServiceTest {
-
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
 
     @Autowired
     private FileService service;
@@ -52,7 +48,6 @@ class FileServiceTest {
 
         assertEquals(expectedMultipartFile.getOriginalFilename(), actualFile.getName());
         assertEquals(expectedMultipartFile.getContentType(), actualFile.getContentType());
-        assertEquals(now().format(DATE_TIME_FORMATTER), actualFile.getUploadedOn().format(DATE_TIME_FORMATTER));
 
         assertTrue(repository.findById(actualFile.getId()).isPresent());
         assertTrue(Files.exists(filesDirectoryPath.resolve(actualFile.getName())));

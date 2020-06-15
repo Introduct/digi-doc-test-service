@@ -35,9 +35,23 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     }
 
     @Test
+    void givenSigningDataNotExists_whenSignContainer_thenNotFound() throws Exception {
+        SignContainerRequest request = createSignContainerRequest();
+        request.setSigningDataId(Long.valueOf(randomNumeric(3)));
+        assertErrorMessage(notFound(signContainer(request)), RESOURCE_NOT_FOUND_TEMPLATE, request.getSigningDataId());
+    }
+
+    @Test
     void givenContainerNotSigned_whenGet_thenNotFound() throws Exception {
         Long notSignedContainerId = Long.valueOf(randomNumeric(3));
         assertErrorMessage(notFound(getContainer(notSignedContainerId)), RESOURCE_NOT_FOUND_TEMPLATE,
+                notSignedContainerId);
+    }
+
+    @Test
+    void givenContainerNotSigned_whenValidate_thenNotFound() throws Exception {
+        Long notSignedContainerId = Long.valueOf(randomNumeric(3));
+        assertErrorMessage(notFound(validateContainer(notSignedContainerId)), RESOURCE_NOT_FOUND_TEMPLATE,
                 notSignedContainerId);
     }
 
@@ -48,7 +62,7 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     }
 
     @Test
-    void givenSigningDataIdNull_whenSIgnContainer_thenBadRequest() throws Exception {
+    void givenSigningDataIdNull_whenSignContainer_thenBadRequest() throws Exception {
         SignContainerRequest request = createSignContainerRequest();
         request.setSigningDataId(null);
 
@@ -57,7 +71,7 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     }
 
     @Test
-    void givenSignatureInHexNull_whenSIgnContainer_thenBadRequest() throws Exception {
+    void givenSignatureInHexNull_whenSignContainer_thenBadRequest() throws Exception {
         SignContainerRequest request = createSignContainerRequest();
         request.setSignatureInHex(null);
 
@@ -66,7 +80,7 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     }
 
     @Test
-    void givenSignatureInHexEmpty_whenSIgnContainer_thenBadRequest() throws Exception {
+    void givenSignatureInHexEmpty_whenSignContainer_thenBadRequest() throws Exception {
         SignContainerRequest request = createSignContainerRequest();
         request.setSignatureInHex("");
 

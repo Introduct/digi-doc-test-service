@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface ContainerService {
 
-    Container signContainer(SignContainerRequest request);
+    Optional<Container> signContainer(SignContainerRequest request);
 
     Optional<Container> get(Long id);
 

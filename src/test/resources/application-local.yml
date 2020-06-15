@@ -19,3 +19,10 @@ storage:
 
 digidoc4j:
   mode: TEST
+
+cleanup:
+  cron.expression: "0/20 * * * * ?" # every minute
+
+test:
+  file:
+    number: 2

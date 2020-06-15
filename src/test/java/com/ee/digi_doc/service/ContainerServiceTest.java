@@ -13,24 +13,24 @@ import org.digidoc4j.DigestAlgorithm;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.time.LocalDateTime.now;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class ContainerServiceTest {
 
-    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+    @Value("${test.file.number:10}")
+    private int fileNumber;
 
     @Autowired
     private ContainerService containerService;
@@ -64,7 +64,7 @@ class ContainerServiceTest {
         signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Container container = containerService.signContainer(signContainerRequest);
+        Container container = containerService.signContainer(signContainerRequest).orElse(null);
 
         assertNotNull(container);
         assertNotNull(container.getId());
@@ -74,7 +74,6 @@ class ContainerServiceTest {
 
         assertEquals(signingData.getContainerName(), container.getName());
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
-        assertEquals(now().format(DATE_TIME_FORMATTER), container.getSignedOn().format(DATE_TIME_FORMATTER));
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
         assertTrue(Files.exists(containerDirectoryPath.resolve(container.getName())));
@@ -97,7 +96,10 @@ class ContainerServiceTest {
         signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Long containerId = containerService.signContainer(signContainerRequest).getId();
+        Container signedContainer = containerService.signContainer(signContainerRequest).orElse(null);
+        assertNotNull(signedContainer);
+
+        Long containerId = signedContainer.getId();
 
         Container container = containerService.get(containerId).orElse(null);
 
@@ -109,7 +111,6 @@ class ContainerServiceTest {
 
         assertEquals(signingData.getContainerName(), container.getName());
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
-        assertEquals(now().format(DATE_TIME_FORMATTER), container.getSignedOn().format(DATE_TIME_FORMATTER));
     }
 
     @Test
@@ -126,7 +127,10 @@ class ContainerServiceTest {
         signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Long containerId = containerService.signContainer(signContainerRequest).getId();
+        Container signedContainer = containerService.signContainer(signContainerRequest).orElse(null);
+        assertNotNull(signedContainer);
+
+        Long containerId = signedContainer.getId();
 
         ValidateContainerResultDto result = containerService.validateContainer(containerId).orElse(null);
 
@@ -156,7 +160,8 @@ class ContainerServiceTest {
         signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Container container = containerService.signContainer(signContainerRequest);
+        Container container = containerService.signContainer(signContainerRequest).orElse(null);
+        assertNotNull(container);
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
         assertTrue(Files.exists(containerDirectoryPath.resolve(container.getName())));
@@ -169,7 +174,7 @@ class ContainerServiceTest {
 
     private List<Long> createFileIds() {
         List<Long> files = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < fileNumber; i++) {
             files.add(fileService.create(FileGenerator.randomMultipartJpeg()).getId());
         }
         return files;

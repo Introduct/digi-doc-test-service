@@ -8,6 +8,7 @@ import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -33,6 +34,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public abstract class AbstractRestControllerTest {
 
     protected static final String RESOURCE_NOT_FOUND_TEMPLATE = "Resource with id %s has not been found.";
+
+    @Value("${test.file.number:10}")
+    private int fileNumber;
 
     @Autowired
     protected MockMvc mvc;
@@ -101,7 +105,7 @@ public abstract class AbstractRestControllerTest {
     protected final CreateSigningDataRequest createSigningDataRequest() throws Exception {
         List<Long> fileIds = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < fileNumber; i++) {
             fileIds.add(getFileId(ok(createFile(FileGenerator.randomMultipartJpeg()))));
         }
 
