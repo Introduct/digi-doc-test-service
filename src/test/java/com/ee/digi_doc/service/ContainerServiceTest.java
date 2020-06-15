@@ -64,7 +64,7 @@ class ContainerServiceTest {
         signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Container container = containerService.signContainer(signContainerRequest).orElse(null);
+        Container container = containerService.signContainer(signContainerRequest);
 
         assertNotNull(container);
         assertNotNull(container.getId());
@@ -96,8 +96,7 @@ class ContainerServiceTest {
         signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Container signedContainer = containerService.signContainer(signContainerRequest).orElse(null);
-        assertNotNull(signedContainer);
+        Container signedContainer = containerService.signContainer(signContainerRequest);
 
         Long containerId = signedContainer.getId();
 
@@ -127,8 +126,7 @@ class ContainerServiceTest {
         signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Container signedContainer = containerService.signContainer(signContainerRequest).orElse(null);
-        assertNotNull(signedContainer);
+        Container signedContainer = containerService.signContainer(signContainerRequest);
 
         Long containerId = signedContainer.getId();
 
@@ -160,8 +158,7 @@ class ContainerServiceTest {
         signContainerRequest.setSigningDataId(signingData.getId());
         signContainerRequest.setSignatureInHex(signatureInHex);
 
-        Container container = containerService.signContainer(signContainerRequest).orElse(null);
-        assertNotNull(container);
+        Container container = containerService.signContainer(signContainerRequest);
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
         assertTrue(Files.exists(containerDirectoryPath.resolve(container.getName())));
