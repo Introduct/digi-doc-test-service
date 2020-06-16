@@ -1,0 +1,19 @@
+version: '2.1'
+
+services:
+  digi-doc-test-service:
+    container_name: digi-doc-test-service
+    image: digi-doc-test-service:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PROFILE=local
+      - LOG_LEVEL=info
+    restart: always
+    ports:
+      - 8080:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/actuator/health"]
+      timeout: 60s
+      interval: 10s

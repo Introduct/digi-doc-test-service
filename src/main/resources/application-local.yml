@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:localdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      path: /databace-console
+      enabled: true
+
+storage:
+  file:
+    path: ./var/digi-doc-service/files
+  container:
+    path: ./var/digi-doc-service/containers
+  signing-data:
+    path: ./var/digi-doc-service/tmp

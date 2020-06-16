@@ -1,0 +1,32 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api/v1
+
+spring:
+  application:
+    name: digi-doc-test-service
+  profiles:
+    active: ${PROFILE:local}
+
+logging:
+  config: classpath:log4j2-spring.xml
+  level:
+    com.ee.digi_doc: ${LOG_LEVEL:info}
+
+springdoc:
+  api-docs:
+    path: /api-documentation
+  swagger-ui:
+    path: /api-documentation.html
+
+storage:
+  file:
+    path: /var/digi-doc-service/files
+  container:
+    path: /var/digi-doc-service/containers
+  signing-data:
+    path: /var/digi-doc-service/tmp
+
+cleanup:
+  cron.expression: "0 0 0/1 * * ?" # every hour
