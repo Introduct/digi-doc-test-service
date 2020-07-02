@@ -1,0 +1,5 @@
+FROM openjdk:11.0.5-jdk
+WORKDIR /app
+ARG JAR_FILE
+COPY ${JAR_FILE} /app/digi-doc-test-service.jar
+ENTRYPOINT java $JAVA_OPTS -jar /app/digi-doc-test-service.jar
