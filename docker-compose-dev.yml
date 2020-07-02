@@ -23,7 +23,7 @@ services:
           - database
 
   digi-doc-test-service:
-    image: digi-doc-test-service:latest
+    image: ${PRIVATE_REGISTRY}digi-doc-test-service:latest
     restart: always
     build:
       context: .
