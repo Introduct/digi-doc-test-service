@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   database:
-    container_name: dogi-doc_database
+    container_name: digi-doc_database
     image: postgres:9.6.12
     working_dir: /application
     environment:
@@ -18,7 +18,7 @@ services:
     ports:
       - "6432:5432"
     networks:
-      dogi-doc-network:
+      digi-doc-network:
         aliases:
           - database
 
@@ -44,14 +44,14 @@ services:
     depends_on:
       - database
     ports:
-      - 8080:8080
+      - 38080:8080
     volumes:
       - files:/var/digi-doc-service/files
       - container:/var/digi-doc-service/containers
       - signing-data:/var/digi-doc-service/tmp
       - ./config/909.p12d:/var/909.p12d
     networks:
-      dogi-doc-network:
+      digi-doc-network:
         aliases:
           - digi-doc-test-service
 
@@ -62,5 +62,5 @@ volumes:
   signing-data:
 
 networks:
-  dogi-doc-network:
-    name: dogi-doc-network
+  digi-doc-network:
+    name: digi-doc-network
