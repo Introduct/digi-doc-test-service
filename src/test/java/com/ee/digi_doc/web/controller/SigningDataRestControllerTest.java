@@ -1,8 +1,11 @@
 package com.ee.digi_doc.web.controller;
 
+import com.ee.digi_doc.persistance.dao.JpaFileRepository;
+import com.ee.digi_doc.persistance.dao.JpaSigningDataRepository;
 import com.ee.digi_doc.web.dto.SigningDataDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
@@ -14,6 +17,12 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 class SigningDataRestControllerTest extends AbstractRestControllerTest {
+
+    @Autowired
+    private JpaFileRepository jpaFileRepository;
+
+    @Autowired
+    private JpaSigningDataRepository jpaSigningDataRepository;
 
     @Test
     void whenCreateSigningData_thenOk() throws Exception {
@@ -28,7 +37,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
 
     @Test
     void givenSigningDataNotExists_whenGet_thenNotFound() throws Exception {
-        Long notExistingSigningDataId = Long.valueOf(randomNumeric(3));
+        Long notExistingSigningDataId = getNotExistingSigningDataId();
         assertErrorMessage(notFound(getSigningData(notExistingSigningDataId)), RESOURCE_NOT_FOUND_TEMPLATE,
                 notExistingSigningDataId);
     }
@@ -72,7 +81,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
     @Test
     void givenNotAllFileExist_whenCreateSigningData_thenBadRequest() throws Exception {
         CreateSigningDataRequest request = createSigningDataRequest();
-        request.getFileIds().add(Long.valueOf(randomNumeric(3)));
+        request.getFileIds().add(getNotExistingFileId());
         assertFieldError(badRequest(createSigningData(request)), "ValidFileIds", "fileIds",
                 "Not all files are found by provided file ids.");
     }
@@ -93,6 +102,26 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
                 .andExpect(jsonPath("$.containerName", is(expectedSigningData.getContainerName())))
                 .andExpect(jsonPath("$.dataToSignName", is(expectedSigningData.getDataToSignName())))
                 .andExpect(jsonPath("$.signatureInHex", is(expectedSigningData.getSignatureInHex())));
+    }
+
+    private Long getNotExistingFileId() {
+        long notExistingFileId = Long.parseLong(randomNumeric(3));
+
+        while (jpaFileRepository.findById(notExistingFileId).isPresent()) {
+            notExistingFileId = Long.parseLong(randomNumeric(3));
+        }
+
+        return notExistingFileId;
+    }
+
+    private Long getNotExistingSigningDataId() {
+        long notExistingSigningDataId = Long.parseLong(randomNumeric(3));
+
+        while (jpaSigningDataRepository.findById(notExistingSigningDataId).isPresent()) {
+            notExistingSigningDataId = Long.parseLong(randomNumeric(3));
+        }
+
+        return notExistingSigningDataId;
     }
 
 }

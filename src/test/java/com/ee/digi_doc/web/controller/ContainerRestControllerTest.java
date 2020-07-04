@@ -1,5 +1,6 @@
 package com.ee.digi_doc.web.controller;
 
+import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.service.SigningDataService;
 import com.ee.digi_doc.util.TestSigningData;
@@ -23,6 +24,9 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     @Autowired
     private SigningDataService signingDataService;
 
+    @Autowired
+    private JpaContainerRepository jpaContainerRepository;
+
     @Test
     void whenSignContainer_thenOk() throws Exception {
         assertContainer(ok(signContainer(createSignContainerRequest())));
@@ -37,20 +41,20 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     @Test
     void givenSigningDataNotExists_whenSignContainer_thenNotFound() throws Exception {
         SignContainerRequest request = createSignContainerRequest();
-        request.setSigningDataId(Long.valueOf(randomNumeric(3)));
+        request.setSigningDataId(getNotExistingSigningDataId());
         assertErrorMessage(notFound(signContainer(request)), RESOURCE_NOT_FOUND_TEMPLATE, request.getSigningDataId());
     }
 
     @Test
     void givenContainerNotSigned_whenGet_thenNotFound() throws Exception {
-        Long notSignedContainerId = Long.valueOf(randomNumeric(3));
+        Long notSignedContainerId = getNotExistingContainerId();
         assertErrorMessage(notFound(getContainer(notSignedContainerId)), RESOURCE_NOT_FOUND_TEMPLATE,
                 notSignedContainerId);
     }
 
     @Test
     void givenContainerNotSigned_whenValidate_thenNotFound() throws Exception {
-        Long notSignedContainerId = Long.valueOf(randomNumeric(3));
+        Long notSignedContainerId = getNotExistingContainerId();
         assertErrorMessage(notFound(validateContainer(notSignedContainerId)), RESOURCE_NOT_FOUND_TEMPLATE,
                 notSignedContainerId);
     }
@@ -135,6 +139,26 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     private ContainerDto retrieveContainerDto(ResultActions resultActions) throws Exception {
         byte[] content = resultActions.andReturn().getResponse().getContentAsByteArray();
         return objectMapper.readValue(content, ContainerDto.class);
+    }
+
+    private long getNotExistingSigningDataId() {
+        long notExistingSigningDataId = Long.parseLong(randomNumeric(3));
+
+        while (signingDataService.getSigningData(notExistingSigningDataId).isPresent()) {
+            notExistingSigningDataId = Long.parseLong(randomNumeric(3));
+        }
+
+        return notExistingSigningDataId;
+    }
+
+    private long getNotExistingContainerId() {
+        long notExistingContainerId = Long.parseLong(randomNumeric(3));
+
+        while (jpaContainerRepository.findById(notExistingContainerId).isPresent()) {
+            notExistingContainerId = Long.parseLong(randomNumeric(3));
+        }
+
+        return notExistingContainerId;
     }
 
 }
