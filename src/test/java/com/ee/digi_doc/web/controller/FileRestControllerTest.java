@@ -1,6 +1,7 @@
 package com.ee.digi_doc.web.controller;
 
 import com.ee.digi_doc.common.properties.FileUploadProperties;
+import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.util.FileGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ class FileRestControllerTest extends AbstractRestControllerTest {
     private static final String MAX_FILE_NAME_TEMPLATE =
             "The file %s exceeds its maximum permitted file name of %s characters.";
     private static final String MAX_FILE_SIZE_TEMPLATE = "The file %s exceeds its maximum permitted size of %s bytes.";
+
+    @Autowired
+    private JpaFileRepository jpaFileRepository;
 
     @Autowired
     private FileUploadProperties fileUploadProperties;
@@ -55,7 +59,7 @@ class FileRestControllerTest extends AbstractRestControllerTest {
 
     @Test
     void givenFileNowExistsInDatabase_whenGet_thenNotFound() throws Exception {
-        Long notExistingFileId = Long.valueOf(randomNumeric(3));
+        Long notExistingFileId = getNotExistingFileId();
         assertErrorMessage(notFound(get(notExistingFileId)), RESOURCE_NOT_FOUND_TEMPLATE, notExistingFileId);
     }
 
@@ -110,6 +114,16 @@ class FileRestControllerTest extends AbstractRestControllerTest {
                 .andExpect(jsonPath("$.uploadedOn", is(notNullValue())))
                 .andExpect(jsonPath("$.url", is(notNullValue())))
                 .andExpect(jsonPath("$.url", is(startsWith("/api/v1/files/"))));
+    }
+
+    private Long getNotExistingFileId() {
+        long notExistingFileId = Long.parseLong(randomNumeric(3));
+
+        while (jpaFileRepository.findById(notExistingFileId).isPresent()) {
+            notExistingFileId = Long.parseLong(randomNumeric(3));
+        }
+
+        return notExistingFileId;
     }
 
 }
