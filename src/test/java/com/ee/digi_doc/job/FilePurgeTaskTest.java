@@ -29,7 +29,7 @@ class FilePurgeTaskTest {
 
     @BeforeEach
     public void before() {
-        File file = fileService.create(FileGenerator.randomMultipartJpeg());
+        File file = fileService.create(FileGenerator.randomFile());
         doReturn(List.of(file)).when(task).findEntitiesToCleanUp();
     }
 

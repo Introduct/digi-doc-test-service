@@ -23,6 +23,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ee.digi_doc.storage.local.LocalStorageContainerRepository.getUniqueContainerName;
+import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueContainerName;
+import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueDataToSignName;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
@@ -76,10 +79,10 @@ class ContainerServiceTest {
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
-        assertTrue(Files.exists(containerDirectoryPath.resolve(container.getName())));
+        assertTrue(Files.exists(containerDirectoryPath.resolve(getUniqueContainerName(container))));
 
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(signingData.getContainerName())));
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(signingData.getDataToSignName())));
+        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
+        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
     }
 
     @Test
@@ -161,21 +164,20 @@ class ContainerServiceTest {
         Container container = containerService.signContainer(signContainerRequest);
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
-        assertTrue(Files.exists(containerDirectoryPath.resolve(container.getName())));
+        assertTrue(Files.exists(containerDirectoryPath.resolve(getUniqueContainerName(container))));
 
         containerService.delete(container);
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isEmpty());
-        assertTrue(Files.notExists(containerDirectoryPath.resolve(container.getName())));
+        assertTrue(Files.notExists(containerDirectoryPath.resolve(getUniqueContainerName(container))));
     }
 
     private List<Long> createFileIds() {
         List<Long> files = new ArrayList<>();
         for (int i = 0; i < fileNumber; i++) {
-            files.add(fileService.create(FileGenerator.randomMultipartJpeg()).getId());
+            files.add(fileService.create(FileGenerator.randomFile()).getId());
         }
         return files;
     }
-
 
 }

@@ -76,9 +76,9 @@ public abstract class AbstractRestControllerTest {
         return builder.content(objectMapper.writeValueAsString(request)).contentType(MediaType.APPLICATION_JSON);
     }
 
-    protected final void assertErrorMessage(ResultActions resultActions, String errorMessageTemplate, Object argument)
+    protected final void assertErrorMessage(ResultActions resultActions, String errorMessageTemplate, Object... arguments)
             throws Exception {
-        resultActions.andExpect(jsonPath("$.errorMessage", is(String.format(errorMessageTemplate, argument))));
+        resultActions.andExpect(jsonPath("$.errors[0].message", is(String.format(errorMessageTemplate, arguments))));
     }
 
     protected final void assertFieldError(ResultActions resultActions, String error, String field, String message)
@@ -106,7 +106,7 @@ public abstract class AbstractRestControllerTest {
         List<Long> fileIds = new ArrayList<>();
 
         for (int i = 0; i < fileNumber; i++) {
-            fileIds.add(getFileId(ok(createFile(FileGenerator.randomMultipartJpeg()))));
+            fileIds.add(getFileId(ok(createFile(FileGenerator.randomFile()))));
         }
 
         CreateSigningDataRequest request = new CreateSigningDataRequest();

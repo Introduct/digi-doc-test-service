@@ -20,7 +20,7 @@ public class File {
     @Setter(AccessLevel.PRIVATE)
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 50)
     private String name;
 
     @Transient
@@ -58,6 +58,4 @@ public class File {
 
         return cleanedFileName;
     }
-
-
 }

@@ -24,7 +24,7 @@ class FileMapperTest {
 
     @Test
     void toDtoTest() {
-        File source = jpaFileRepository.save(File.of(FileGenerator.randomMultipartJpeg()));
+        File source = jpaFileRepository.save(File.of(FileGenerator.randomFile()));
         FileDto target = mapper.toDto(source);
 
         assertNotNull(target);

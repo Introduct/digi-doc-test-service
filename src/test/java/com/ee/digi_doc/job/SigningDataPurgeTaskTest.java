@@ -36,7 +36,7 @@ class SigningDataPurgeTaskTest {
     @BeforeEach
     public void before() {
         CreateSigningDataRequest request = new CreateSigningDataRequest();
-        request.setFileIds(List.of(fileService.create(FileGenerator.randomMultipartJpeg()).getId()));
+        request.setFileIds(List.of(fileService.create(FileGenerator.randomFile()).getId()));
         request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
         SigningData signingData = signingDataService.create(request);
         doReturn(List.of(signingData)).when(task).findEntitiesToCleanUp();

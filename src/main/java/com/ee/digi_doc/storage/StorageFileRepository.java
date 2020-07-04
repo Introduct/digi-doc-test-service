@@ -8,8 +8,8 @@ public interface StorageFileRepository {
 
     void storeFile(File file);
 
-    Optional<byte[]> getFileContent(String fileName);
+    Optional<byte[]> getFileContent(File file);
 
-    void deleteFile(String fileName);
+    void deleteFile(File file);
 
 }

@@ -41,36 +41,40 @@ public class LocalStorageFileRepository implements StorageFileRepository {
     @Override
     public void storeFile(File file) {
         try {
-            Files.write(fileStorageLocation.resolve(file.getName()), file.getContent());
+            Files.write(fileStorageLocation.resolve(getUniqueFileName(file)), file.getContent());
         } catch (IOException e) {
             log.error("Exception obtained during file write", e);
-            throw new FileNotWrittenException(file.getName());
+            throw new FileNotWrittenException(getUniqueFileName(file));
         }
     }
 
     @Override
-    public Optional<byte[]> getFileContent(String fileName) {
+    public Optional<byte[]> getFileContent(File file) {
         try {
-            Path filePath = fileStorageLocation.resolve(fileName).normalize();
+            Path filePath = fileStorageLocation.resolve(getUniqueFileName(file)).normalize();
             return Files.exists(filePath) ? Optional.of(Files.readAllBytes(filePath)) : Optional.empty();
         } catch (IOException e) {
             log.error("Exception obtained during file read from local storage", e);
-            throw new FileNotReadException(fileName);
+            throw new FileNotReadException(getUniqueFileName(file));
         }
     }
 
     @Override
-    public void deleteFile(String fileName) {
+    public void deleteFile(File file) {
         try {
-            Path filePath = fileStorageLocation.resolve(fileName).normalize();
+            Path filePath = fileStorageLocation.resolve(getUniqueFileName(file)).normalize();
 
             if (!Files.exists(filePath)) {
-                throw new ResourceNotFoundException(fileName);
+                throw new ResourceNotFoundException(getUniqueFileName(file));
             }
             Files.delete(filePath);
         } catch (IOException e) {
             log.error("Exception obtained during file delete from local storage", e);
-            throw new FileNotDeletedException(fileName);
+            throw new FileNotDeletedException(getUniqueFileName(file));
         }
+    }
+
+    public static String getUniqueFileName(File file) {
+        return org.apache.commons.lang3.StringUtils.join(new Object[]{file.getId(), file.getName()}, "-");
     }
 }

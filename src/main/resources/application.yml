@@ -8,11 +8,19 @@ spring:
     name: digi-doc-test-service
   profiles:
     active: ${PROFILE:local}
+  servlet:
+    multipart:
+      maxFileSize: "-1"
+      max-request-size: "512MB"
 
 logging:
   config: classpath:log4j2-spring.xml
   level:
     com.ee.digi_doc: ${LOG_LEVEL:info}
+
+upload:
+  max-name-length: 50
+  max-size: 10000000 # 10Mb in bytes
 
 springdoc:
   api-docs:

@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.ee.digi_doc.storage.local.LocalStorageFileRepository.getUniqueFileName;
+import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueContainerName;
+import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueDataToSignName;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -75,13 +78,13 @@ class SigningDataServiceTest {
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isPresent());
 
-        assertTrue(Files.exists(signingDataDirectoryPath.resolve(signingData.getContainerName())));
-        assertTrue(Files.exists(signingDataDirectoryPath.resolve(signingData.getDataToSignName())));
+        assertTrue(Files.exists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
+        assertTrue(Files.exists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
 
         assertTrue(jpaFileRepository.findAllById(fileIds).isEmpty());
 
         for (File file : filesToSign) {
-            assertTrue(Files.notExists(filesDirectoryPath.resolve(file.getName())));
+            assertTrue(Files.notExists(filesDirectoryPath.resolve(getUniqueFileName(file))));
         }
     }
 
@@ -123,17 +126,16 @@ class SigningDataServiceTest {
         signingDataService.delete(signingData);
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isEmpty());
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(signingData.getContainerName())));
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(signingData.getDataToSignName())));
+        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
+        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
     }
 
     private List<File> createFiles() {
         List<File> files = new ArrayList<>();
         for (int i = 0; i < fileNumber; i++) {
-            files.add(fileService.create(FileGenerator.randomMultipartJpeg()));
+            files.add(fileService.create(FileGenerator.randomFile()));
         }
         return files;
     }
-
 
 }
