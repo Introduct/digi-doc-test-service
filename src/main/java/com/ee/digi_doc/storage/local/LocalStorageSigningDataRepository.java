@@ -8,6 +8,7 @@ import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.storage.StorageSigningDataRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Container;
 import org.digidoc4j.DataToSign;
@@ -45,65 +46,73 @@ public class LocalStorageSigningDataRepository implements StorageSigningDataRepo
 
     @Override
     public void storeSigningData(SigningData signingData) {
-        Path containerPath = signingDataStorageLocation.resolve(signingData.getContainerName()).normalize();
-        Path dataToSignPath = signingDataStorageLocation.resolve(signingData.getDataToSignName()).normalize();
+        Path containerPath = signingDataStorageLocation.resolve(getUniqueContainerName(signingData)).normalize();
+        Path dataToSignPath = signingDataStorageLocation.resolve(getUniqueDataToSignName(signingData)).normalize();
 
         try (OutputStream outputStream = new FileOutputStream(containerPath.toFile())) {
             signingData.getContainer().save(outputStream);
         } catch (IOException e) {
             log.error("Error obtained during container write", e);
-            throw new FileNotWrittenException(signingData.getContainerName());
+            throw new FileNotWrittenException(getUniqueContainerName(signingData));
         }
 
         try (ObjectOutput objectOutput = new ObjectOutputStream(new FileOutputStream(dataToSignPath.toFile()))) {
             objectOutput.writeObject(signingData.getDataToSign());
         } catch (IOException e) {
             log.error("Error obtained during data to sign write", e);
-            throw new FileNotWrittenException(signingData.getDataToSignName());
+            throw new FileNotWrittenException(getUniqueDataToSignName(signingData));
         }
     }
 
     @Override
-    public Container getContainer(String containerName) {
-        Path containerPath = signingDataStorageLocation.resolve(containerName).normalize();
+    public Container getContainer(SigningData signingData) {
+        Path containerPath = signingDataStorageLocation.resolve(getUniqueContainerName(signingData)).normalize();
         try (InputStream inputStream = new FileInputStream(containerPath.toFile())) {
             return BDocContainerBuilder.aContainer().fromStream(inputStream).withConfiguration(configuration).build();
         } catch (IOException e) {
             log.error("Error obtained during container read", e);
-            throw new FileNotReadException(containerName);
+            throw new FileNotReadException(getUniqueContainerName(signingData));
         }
     }
 
     @Override
-    public DataToSign getDataToSign(String dataToSignName) {
-        Path dataToSignPath = signingDataStorageLocation.resolve(dataToSignName).normalize();
+    public DataToSign getDataToSign(SigningData signingData) {
+        Path dataToSignPath = signingDataStorageLocation.resolve(getUniqueDataToSignName(signingData)).normalize();
         try (ObjectInput objectInput = new ObjectInputStream(new FileInputStream(dataToSignPath.toFile()))) {
             return (DataToSign) objectInput.readObject();
         } catch (IOException | ClassNotFoundException e) {
             log.error("Error obtained during data to sign read", e);
-            throw new FileNotReadException(dataToSignName);
+            throw new FileNotReadException(getUniqueDataToSignName(signingData));
         }
     }
 
     @Override
-    public void deleteContainer(String containerName) {
+    public void deleteContainer(SigningData signingData) {
         try {
-            Path containerPath = signingDataStorageLocation.resolve(containerName).normalize();
+            Path containerPath = signingDataStorageLocation.resolve(getUniqueContainerName(signingData)).normalize();
             Files.delete(containerPath);
         } catch (IOException e) {
-            log.error("Error obtained during container delete: " + containerName, e);
-            throw new FileNotDeletedException(containerName);
+            log.error("Error obtained during container delete: " + getUniqueContainerName(signingData), e);
+            throw new FileNotDeletedException(getUniqueContainerName(signingData));
         }
     }
 
     @Override
-    public void deleteDataToSigh(String dataToSignName) {
+    public void deleteDataToSigh(SigningData signingData) {
         try {
-            Path dataToSignPath = signingDataStorageLocation.resolve(dataToSignName).normalize();
+            Path dataToSignPath = signingDataStorageLocation.resolve(getUniqueDataToSignName(signingData)).normalize();
             Files.delete(dataToSignPath);
         } catch (IOException e) {
-            log.error("Error obtained during data to sign delete: " + dataToSignName, e);
-            throw new FileNotDeletedException(dataToSignName);
+            log.error("Error obtained during data to sign delete: " + getUniqueDataToSignName(signingData), e);
+            throw new FileNotDeletedException(getUniqueDataToSignName(signingData));
         }
+    }
+
+    public static String getUniqueContainerName(SigningData signingData) {
+        return StringUtils.join(new Object[]{signingData.getId(), signingData.getContainerName()}, "-");
+    }
+
+    public static String getUniqueDataToSignName(SigningData signingData) {
+        return StringUtils.join(new Object[]{signingData.getId(), signingData.getDataToSignName()}, "-");
     }
 }

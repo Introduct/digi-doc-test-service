@@ -22,10 +22,10 @@ public class SigningData {
     @Setter(AccessLevel.PRIVATE)
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, updatable = false, length = 50)
     private String containerName;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, updatable = false, length = 50)
     private String dataToSignName;
 
     @Column(nullable = false, updatable = false)

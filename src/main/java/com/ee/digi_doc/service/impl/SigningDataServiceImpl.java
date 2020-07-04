@@ -59,10 +59,10 @@ public class SigningDataServiceImpl implements SigningDataService {
                 .map(signingData -> {
                     log.debug("Data to sign has been found in database");
 
-                    signingData.setContainer(storageSigningDataRepository.getContainer(signingData.getContainerName()));
+                    signingData.setContainer(storageSigningDataRepository.getContainer(signingData));
                     log.debug("DBDoc container has been found in local storage");
 
-                    signingData.setDataToSign(storageSigningDataRepository.getDataToSign(signingData.getDataToSignName()));
+                    signingData.setDataToSign(storageSigningDataRepository.getDataToSign(signingData));
                     log.debug("Data to sign has been found in local storage");
 
                     return signingData;
@@ -76,10 +76,10 @@ public class SigningDataServiceImpl implements SigningDataService {
         jpaSigningDataRepository.delete(signingData);
         log.debug("Data to sign has been removed from database");
 
-        storageSigningDataRepository.deleteContainer(signingData.getContainerName());
+        storageSigningDataRepository.deleteContainer(signingData);
         log.debug("Container has been removed from local storage");
 
-        storageSigningDataRepository.deleteDataToSigh(signingData.getDataToSignName());
+        storageSigningDataRepository.deleteDataToSigh(signingData);
         log.debug("Data to sigh has been removed from local storage");
     }
 

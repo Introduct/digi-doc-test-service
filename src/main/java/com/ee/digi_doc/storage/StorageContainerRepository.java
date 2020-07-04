@@ -6,8 +6,8 @@ public interface StorageContainerRepository {
 
     void storeContainer(Container container);
 
-    org.digidoc4j.Container getContainer(String containerName);
+    org.digidoc4j.Container getContainer(Container container);
 
-    void deleteContainer(String containerName);
+    void deleteContainer(Container container);
 
 }

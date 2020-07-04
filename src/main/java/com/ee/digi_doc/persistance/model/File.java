@@ -20,13 +20,13 @@ public class File {
     @Setter(AccessLevel.PRIVATE)
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, updatable = false, length = 50)
     private String name;
 
     @Transient
     private byte[] content;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, updatable = false)
     private String contentType;
 
     @Column(nullable = false, updatable = false)
@@ -58,6 +58,4 @@ public class File {
 
         return cleanedFileName;
     }
-
-
 }

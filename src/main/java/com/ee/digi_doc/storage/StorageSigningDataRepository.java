@@ -8,12 +8,12 @@ public interface StorageSigningDataRepository {
 
     void storeSigningData(SigningData signingData);
 
-    Container getContainer(String containerName);
+    Container getContainer(SigningData signingData);
 
-    DataToSign getDataToSign(String dataToSignName);
+    DataToSign getDataToSign(SigningData signingData);
 
-    void deleteContainer(String containerName);
+    void deleteContainer(SigningData signingData);
 
-    void deleteDataToSigh(String dataToSignName);
+    void deleteDataToSigh(SigningData signingData);
 
 }

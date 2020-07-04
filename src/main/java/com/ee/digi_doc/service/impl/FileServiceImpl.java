@@ -42,7 +42,7 @@ public class FileServiceImpl implements FileService {
         return jpaFileRepository.findById(id)
                 .flatMap(file -> {
                     log.debug("File has been found in database, file: {}", file);
-                    return storageFileRepository.getFileContent(file.getName())
+                    return storageFileRepository.getFileContent(file)
                             .map(bytes -> {
                                 log.debug("File content has been found in local storage");
                                 file.setContent(bytes);
@@ -60,7 +60,7 @@ public class FileServiceImpl implements FileService {
                     log.debug("File has been found in database, file: {}", file);
                     jpaFileRepository.delete(file);
                     log.info("File has been deleted from database");
-                    storageFileRepository.deleteFile(file.getName());
+                    storageFileRepository.deleteFile(file);
                     log.info("File has been deleted from local storage");
                 });
     }
@@ -72,7 +72,7 @@ public class FileServiceImpl implements FileService {
         jpaFileRepository.delete(file);
         log.info("File has been deleted from database");
 
-        storageFileRepository.deleteFile(file.getName());
+        storageFileRepository.deleteFile(file);
         log.info("File has been deleted from local storage");
     }
 

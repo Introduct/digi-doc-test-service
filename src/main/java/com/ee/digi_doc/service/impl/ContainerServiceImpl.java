@@ -66,7 +66,7 @@ public class ContainerServiceImpl implements ContainerService {
         return jpaContainerRepository.findById(id)
                 .map(container -> {
                     log.debug("Container has been found in database");
-                    container.setBdDocContainer(storageContainerRepository.getContainer(container.getName()));
+                    container.setBdDocContainer(storageContainerRepository.getContainer(container));
                     log.debug("DBDoc container has been found in local storage");
                     return container;
                 });
@@ -91,7 +91,7 @@ public class ContainerServiceImpl implements ContainerService {
         jpaContainerRepository.delete(container);
         log.debug("Container has been removed from database");
 
-        storageContainerRepository.deleteContainer(container.getName());
+        storageContainerRepository.deleteContainer(container);
         log.debug("Container has been removed from local storage");
     }
 

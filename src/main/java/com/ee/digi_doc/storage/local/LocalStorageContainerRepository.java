@@ -8,6 +8,7 @@ import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.storage.StorageContainerRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.impl.asic.asice.bdoc.BDocContainerBuilder;
 import org.springframework.stereotype.Repository;
@@ -43,34 +44,38 @@ public class LocalStorageContainerRepository implements StorageContainerReposito
 
     @Override
     public void storeContainer(Container container) {
-        Path containerPath = containerStorageLocation.resolve(container.getName()).normalize();
+        Path containerPath = containerStorageLocation.resolve(getUniqueContainerName(container)).normalize();
         try (OutputStream outputStream = new FileOutputStream(containerPath.toFile())) {
             container.getBdDocContainer().save(outputStream);
         } catch (IOException e) {
             log.error("Error obtained during container write", e);
-            throw new FileNotWrittenException(container.getName());
+            throw new FileNotWrittenException(getUniqueContainerName(container));
         }
     }
 
     @Override
-    public org.digidoc4j.Container getContainer(String containerName) {
-        Path containerPath = containerStorageLocation.resolve(containerName).normalize();
+    public org.digidoc4j.Container getContainer(Container container) {
+        Path containerPath = containerStorageLocation.resolve(getUniqueContainerName(container)).normalize();
         try (InputStream inputStream = new FileInputStream(containerPath.toFile())) {
             return BDocContainerBuilder.aContainer().fromStream(inputStream).withConfiguration(configuration).build();
         } catch (IOException e) {
             log.error("Error obtained during container read", e);
-            throw new FileNotReadException(containerName);
+            throw new FileNotReadException(getUniqueContainerName(container));
         }
     }
 
     @Override
-    public void deleteContainer(String containerName) {
+    public void deleteContainer(Container container) {
         try {
-            Path containerPath = containerStorageLocation.resolve(containerName).normalize();
+            Path containerPath = containerStorageLocation.resolve(getUniqueContainerName(container)).normalize();
             Files.delete(containerPath);
         } catch (IOException e) {
-            log.error("Error obtained during container delete: " + containerName, e);
-            throw new FileNotDeletedException(containerName);
+            log.error("Error obtained during container delete: " + getUniqueContainerName(container), e);
+            throw new FileNotDeletedException(getUniqueContainerName(container));
         }
+    }
+
+    public static String getUniqueContainerName(Container container) {
+        return StringUtils.join(new Object[]{container.getId(), container.getName()}, "-");
     }
 }
