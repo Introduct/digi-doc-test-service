@@ -15,10 +15,10 @@ public class Container {
     @Setter(AccessLevel.PRIVATE)
     private Long id;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, length = 50)
     private String name;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, updatable = false)
     private String contentType;
 
     @Column(nullable = false, updatable = false)
