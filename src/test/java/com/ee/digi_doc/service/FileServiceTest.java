@@ -1,6 +1,5 @@
 package com.ee.digi_doc.service;
 
-import com.ee.digi_doc.common.properties.FileUploadProperties;
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.InvalidFileNameException;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
@@ -9,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -36,9 +34,6 @@ class FileServiceTest {
 
     @Autowired
     private StorageProperties storageProperties;
-
-    @Autowired
-    private FileUploadProperties fileUploadProperties;
 
     @Test
     void whenCreateFile_thenOk() {
@@ -139,18 +134,6 @@ class FileServiceTest {
             String fileName = randomAlphabetic(10) + ".";
             service.create(randomTxtFile(fileName));
         });
-    }
-
-    @Test
-    void givenFileNameLengthLargeThan20_whenCreate_thenExceptionThrown() {
-        String fileName = randomAlphabetic(fileUploadProperties.getMaxNameLength() + 1);
-        MockMultipartFile multipartFile = randomTxtFile(fileName);
-
-        DataIntegrityViolationException exception = assertThrows(DataIntegrityViolationException.class,
-                () -> service.create(multipartFile));
-
-        assertNotNull(exception.getRootCause());
-        assertTrue(exception.getRootCause().getMessage().contains("Value too long for column"));
     }
 
     @Test

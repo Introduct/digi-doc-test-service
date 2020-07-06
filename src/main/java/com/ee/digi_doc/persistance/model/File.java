@@ -23,7 +23,7 @@ public class File {
     @Setter(AccessLevel.PRIVATE)
     private Long id;
 
-    @Column(nullable = false, updatable = false, length = 50)
+    @Column(nullable = false, updatable = false)
     private String name;
 
     @Transient
