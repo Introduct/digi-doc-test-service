@@ -29,7 +29,7 @@ class FilePurgeTaskTest {
 
     @BeforeEach
     public void before() {
-        File file = fileService.create(FileGenerator.randomFile());
+        File file = fileService.create(FileGenerator.randomTxtFile());
         doReturn(List.of(file)).when(task).findEntitiesToCleanUp();
     }
 

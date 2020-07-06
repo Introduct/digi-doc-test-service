@@ -5,7 +5,6 @@ import com.ee.digi_doc.persistance.dao.JpaSigningDataRepository;
 import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.web.dto.SigningDataDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
-import org.apache.pdfbox.pdmodel.common.filespecification.PDSimpleFileSpecification;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +12,11 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.List;
 
+import static com.ee.digi_doc.util.FileGenerator.randomFile;
+import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -38,6 +41,16 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
     @Test
     void whenCreateSigningData_thenOk() throws Exception {
         assertSigningData(ok(createSigningData(createSigningDataRequest())));
+    }
+
+    @Test
+    void givenFileHasEmptyContentType_whenCreateSigningData_thenOk() throws Exception {
+        List<Long> fileIds = new ArrayList<>();
+
+        fileIds.add(getFileId(ok(createFile(randomTxtFile()))));
+        fileIds.add(getFileId(ok(createFile(randomFile(randomAlphabetic(10), 10, null)))));
+
+        assertSigningData(ok(createSigningData(createSigningDataRequest(fileIds))));
     }
 
     @Test
@@ -100,9 +113,9 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
     @Test
     void givenFileCountLargerThenMax_whenCreateSigningData_thenBadRequest() throws Exception {
         CreateSigningDataRequest request = createSigningDataRequest();
-        request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomFile()))));
-        request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomFile()))));
-        request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomFile()))));
+        request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
+        request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
+        request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
         assertFieldError(badRequest(createSigningData(request)), "Validation.SigningData.MaxFileCount",
                 "fileIds", MAX_FILE_COUNT_EXCEEDED_TEMPLATE, maxFileCount);
     }

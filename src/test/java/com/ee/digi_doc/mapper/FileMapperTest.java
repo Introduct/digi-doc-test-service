@@ -24,7 +24,7 @@ class FileMapperTest {
 
     @Test
     void toDtoTest() {
-        File source = jpaFileRepository.save(File.of(FileGenerator.randomFile()));
+        File source = jpaFileRepository.save(File.of(FileGenerator.randomTxtFile()));
         FileDto target = mapper.toDto(source);
 
         assertNotNull(target);

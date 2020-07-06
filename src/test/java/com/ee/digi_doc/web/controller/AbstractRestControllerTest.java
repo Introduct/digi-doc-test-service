@@ -1,6 +1,5 @@
 package com.ee.digi_doc.web.controller;
 
-import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.dto.FileDto;
 import com.ee.digi_doc.web.dto.SigningDataDto;
@@ -24,6 +23,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -106,9 +106,13 @@ public abstract class AbstractRestControllerTest {
         List<Long> fileIds = new ArrayList<>();
 
         for (int i = 0; i < fileNumber; i++) {
-            fileIds.add(getFileId(ok(createFile(FileGenerator.randomFile()))));
+            fileIds.add(getFileId(ok(createFile(randomTxtFile()))));
         }
 
+        return createSigningDataRequest(fileIds);
+    }
+
+    protected final CreateSigningDataRequest createSigningDataRequest(List<Long> fileIds) {
         CreateSigningDataRequest request = new CreateSigningDataRequest();
         request.setFileIds(fileIds);
         request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());

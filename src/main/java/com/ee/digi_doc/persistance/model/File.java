@@ -9,6 +9,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
+import static java.util.Optional.ofNullable;
+import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+
 @Entity
 @Data
 @EqualsAndHashCode(of = "id")
@@ -42,8 +45,8 @@ public class File {
     public static File of(MultipartFile multipartFile) {
         File file = new File();
 
-        file.setName(getFileName(multipartFile.getOriginalFilename()));
-        file.setContentType(multipartFile.getContentType());
+        file.setName(getFileName(ofNullable(multipartFile.getOriginalFilename()).orElseGet(multipartFile::getName)));
+        file.setContentType(ofNullable(multipartFile.getContentType()).orElse(APPLICATION_OCTET_STREAM_VALUE));
         file.setContent(multipartFile.getBytes());
 
         return file;

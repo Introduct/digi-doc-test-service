@@ -2,7 +2,6 @@ package com.ee.digi_doc.web.controller;
 
 import com.ee.digi_doc.common.properties.FileUploadProperties;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
-import com.ee.digi_doc.util.FileGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -11,6 +10,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.validation.constraints.NotNull;
 
+import static com.ee.digi_doc.util.FileGenerator.randomFile;
+import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.*;
@@ -32,19 +33,25 @@ class FileRestControllerTest extends AbstractRestControllerTest {
 
     @Test
     void whenCreateFile_thenOk() throws Exception {
-        MockMultipartFile mockMultipartFile = FileGenerator.randomFile();
+        MockMultipartFile mockMultipartFile = randomTxtFile();
         assertFile(ok(createFile(mockMultipartFile)), mockMultipartFile);
     }
 
     @Test
+    void givenFileHasEmptyContentType_whenCreate_thenOk() throws Exception {
+        MockMultipartFile multipartFile = randomFile(randomAlphabetic(10), 10, null);
+        assertFile(ok(createFile(multipartFile)), multipartFile);
+    }
+
+    @Test
     void whenGetFile_thenOk() throws Exception {
-        Long fileId = getFileId(ok(createFile(FileGenerator.randomFile())));
+        Long fileId = getFileId(ok(createFile(randomTxtFile())));
         ok(get(fileId));
     }
 
     @Test
     void whenDeleteFile_thenOk() throws Exception {
-        Long fileId = getFileId(ok(createFile(FileGenerator.randomFile())));
+        Long fileId = getFileId(ok(createFile(randomTxtFile())));
         ok(delete(fileId));
     }
 
@@ -52,7 +59,7 @@ class FileRestControllerTest extends AbstractRestControllerTest {
     void givenInvalidFileName_whenCreate_thenBadRequest() throws Exception {
         String invalidFileName = randomAlphabetic(10) + ".";
 
-        MockMultipartFile multipartFile = FileGenerator.randomFile(invalidFileName);
+        MockMultipartFile multipartFile = randomTxtFile(invalidFileName);
         assertErrorMessage(badRequest(createFile(multipartFile)), INVALID_FILE_NAME_TEMPLATE,
                 multipartFile.getOriginalFilename());
     }
@@ -72,7 +79,7 @@ class FileRestControllerTest extends AbstractRestControllerTest {
     @Test
     void givenFileNameLengthLargeThan20_whenCreate_thenBadRequest() throws Exception {
         String fileName = randomAlphabetic(fileUploadProperties.getMaxNameLength() + 2);
-        MockMultipartFile multipartFile = FileGenerator.randomFile(fileName);
+        MockMultipartFile multipartFile = randomTxtFile(fileName);
         assertErrorMessage(badRequest(createFile(multipartFile)), MAX_FILE_NAME_TEMPLATE,
                 multipartFile.getOriginalFilename(), fileUploadProperties.getMaxNameLength());
     }
@@ -80,14 +87,14 @@ class FileRestControllerTest extends AbstractRestControllerTest {
     @Test
     void givenFileSizeLargerThenMaxUploadSize_whenCreate_thenBadRequest() throws Exception {
         int fileSize = Integer.parseInt(String.valueOf(fileUploadProperties.getMaxSize() + 1));
-        MockMultipartFile multipartFile = FileGenerator.randomFile(fileSize);
+        MockMultipartFile multipartFile = randomTxtFile(fileSize);
         assertErrorMessage(badRequest(createFile(multipartFile)),
                 MAX_FILE_SIZE_TEMPLATE, multipartFile.getOriginalFilename(), fileUploadProperties.getMaxSize());
     }
 
     @Test
     void givenFileUploadedTwice_whenDeleteFirst_thenSecondExists() throws Exception {
-        MockMultipartFile multipartFile = FileGenerator.randomFile();
+        MockMultipartFile multipartFile = randomTxtFile();
 
         Long firstFileId = getFileId(ok(createFile(multipartFile)));
         Long secondFileId = getFileId(ok(createFile(multipartFile)));
@@ -109,11 +116,14 @@ class FileRestControllerTest extends AbstractRestControllerTest {
         resultActions.andExpect(jsonPath("$.id", is(notNullValue())))
                 .andExpect(jsonPath("$.name", is(notNullValue())))
                 .andExpect(jsonPath("$.name", is(mockMultipartFile.getOriginalFilename())))
-                .andExpect(jsonPath("$.contentType", is(notNullValue())))
-                .andExpect(jsonPath("$.contentType", is(mockMultipartFile.getContentType())))
                 .andExpect(jsonPath("$.uploadedOn", is(notNullValue())))
                 .andExpect(jsonPath("$.url", is(notNullValue())))
                 .andExpect(jsonPath("$.url", is(startsWith("/api/v1/files/"))));
+
+        if (mockMultipartFile.getContentType() != null) {
+            resultActions.andExpect(jsonPath("$.contentType", is(notNullValue())))
+                    .andExpect(jsonPath("$.contentType", is(mockMultipartFile.getContentType())));
+        }
     }
 
     private Long getNotExistingFileId() {

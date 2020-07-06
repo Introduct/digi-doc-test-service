@@ -6,6 +6,7 @@ import com.ee.digi_doc.service.SigningDataService;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.dto.ContainerDto;
 import com.ee.digi_doc.web.dto.SigningDataDto;
+import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
 import org.digidoc4j.DigestAlgorithm;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
+import static com.ee.digi_doc.util.FileGenerator.randomFile;
+import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -30,6 +36,16 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     @Test
     void whenSignContainer_thenOk() throws Exception {
         assertContainer(ok(signContainer(createSignContainerRequest())));
+    }
+
+    @Test
+    void givenFileHasEmptyContentType_whenSignContainer_thenOk() throws Exception {
+        List<Long> fileIds = new ArrayList<>();
+
+        fileIds.add(getFileId(ok(createFile(randomTxtFile()))));
+        fileIds.add(getFileId(ok(createFile(randomFile(randomAlphabetic(10), 10, null)))));
+
+        assertContainer(ok(signContainer(createSignContainerRequest(createSigningDataRequest(fileIds)))));
     }
 
     @Test
@@ -123,7 +139,11 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     }
 
     private SignContainerRequest createSignContainerRequest() throws Exception {
-        SigningDataDto signingDataDto = retrieveSigningDataDto(ok(createSigningData(createSigningDataRequest())));
+        return createSignContainerRequest(createSigningDataRequest());
+    }
+
+    private SignContainerRequest createSignContainerRequest(CreateSigningDataRequest request) throws Exception {
+        SigningDataDto signingDataDto = retrieveSigningDataDto(ok(createSigningData(request)));
 
         SigningData signingData = signingDataService.getSigningData(signingDataDto.getId()).orElse(null);
         assertNotNull(signingData);
