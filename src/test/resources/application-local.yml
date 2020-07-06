@@ -9,6 +9,9 @@ spring:
       ddl-auto: create-drop
     database-platform: org.hibernate.dialect.H2Dialect
 
+sign:
+  max-file-count: 4
+
 storage:
   file:
     path: ./var/digi-doc-service/files

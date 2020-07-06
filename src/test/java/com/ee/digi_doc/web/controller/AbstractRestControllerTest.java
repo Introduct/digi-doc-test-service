@@ -81,11 +81,11 @@ public abstract class AbstractRestControllerTest {
         resultActions.andExpect(jsonPath("$.errors[0].message", is(String.format(errorMessageTemplate, arguments))));
     }
 
-    protected final void assertFieldError(ResultActions resultActions, String error, String field, String message)
-            throws Exception {
+    protected final void assertFieldError(ResultActions resultActions, String error, String field, String message,
+                                          Object... arguments) throws Exception {
         resultActions
                 .andExpect(jsonPath("errors[0].error", is(error)))
-                .andExpect(jsonPath("errors[0].message", is(message)))
+                .andExpect(jsonPath("errors[0].message", is(String.format(message, arguments))))
                 .andExpect(jsonPath("errors[0].field", is(field)));
     }
 

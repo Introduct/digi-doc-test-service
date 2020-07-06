@@ -22,6 +22,9 @@ upload:
   max-name-length: 50
   max-size: 10000000 # 10Mb in bytes
 
+sign:
+  max-file-count: 20
+
 springdoc:
   api-docs:
     path: /api-documentation

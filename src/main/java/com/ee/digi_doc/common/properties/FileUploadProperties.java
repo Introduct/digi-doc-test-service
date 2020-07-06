@@ -11,4 +11,5 @@ public class FileUploadProperties {
 
     private int maxNameLength;
     private long maxSize;
+
 }
