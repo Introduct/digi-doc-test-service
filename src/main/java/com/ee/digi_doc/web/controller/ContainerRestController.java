@@ -4,6 +4,8 @@ import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.mapper.ContainerMapper;
 import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.service.ContainerService;
+import com.ee.digi_doc.service.GenerateLinkService;
+import com.ee.digi_doc.web.GenerateLinkResponse;
 import com.ee.digi_doc.web.dto.ContainerDto;
 import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.SignContainerRequest;
@@ -26,6 +28,7 @@ public class ContainerRestController {
 
     private final ContainerService containerService;
     private final ContainerMapper containerMapper;
+    private final GenerateLinkService generateLinkService;
 
     @PostMapping(produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
     public ContainerDto signContainer(@Valid @RequestBody SignContainerRequest request) {
@@ -45,6 +48,15 @@ public class ContainerRestController {
     @GetMapping(value = "/{id}/validate", produces = APPLICATION_JSON_VALUE)
     public ValidateContainerResultDto validate(@PathVariable Long id) {
         return containerService.validateContainer(id)
+                .orElseThrow(() -> new ResourceNotFoundException(id));
+    }
+
+    @GetMapping(value = "/{id}/link", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<GenerateLinkResponse> generateLink(@PathVariable Long id) {
+        return containerService.get(id)
+                .map(containerMapper::toDto)
+                .map(ContainerDto::getUrl)
+                .map(generateLinkService::generate)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
     }
 

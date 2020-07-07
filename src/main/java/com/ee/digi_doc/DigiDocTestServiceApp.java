@@ -1,5 +1,6 @@
 package com.ee.digi_doc;
 
+import com.ee.digi_doc.common.properties.BitlinksProperties;
 import com.ee.digi_doc.common.properties.Digidoc4jProperties;
 import com.ee.digi_doc.common.properties.FileUploadProperties;
 import com.ee.digi_doc.common.properties.StorageProperties;
@@ -9,7 +10,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties({StorageProperties.class, Digidoc4jProperties.class, FileUploadProperties.class})
+@EnableConfigurationProperties({
+        StorageProperties.class,
+        Digidoc4jProperties.class,
+        FileUploadProperties.class,
+        BitlinksProperties.class
+})
 public class DigiDocTestServiceApp {
 
     @Generated

@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ContainerRestControllerTest extends AbstractRestControllerTest {
 
@@ -82,6 +83,14 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     }
 
     @Test
+    void givenContainerSigned_whenGenerateLink_thenOK() throws Exception {
+        ContainerDto containerDto = retrieveContainerDto(ok(signContainer(createSignContainerRequest())));
+        generateLink(containerDto.getId())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.link", is(notNullValue())));
+    }
+
+    @Test
     void givenSigningDataIdNull_whenSignContainer_thenBadRequest() throws Exception {
         SignContainerRequest request = createSignContainerRequest();
         request.setSigningDataId(null);
@@ -118,6 +127,10 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
 
     private ResultActions validateContainer(@NotNull Long id) throws Exception {
         return get("/containers/" + id + "/validate");
+    }
+
+    private ResultActions generateLink(@NotNull Long id) throws Exception {
+        return get("/containers/" + id + "/link");
     }
 
     private void assertContainer(ResultActions resultActions) throws Exception {

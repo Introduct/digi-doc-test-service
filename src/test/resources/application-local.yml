@@ -26,6 +26,9 @@ digidoc4j:
 cleanup:
   cron.expression: "0/20 * * * * ?" # every minute
 
+bitlinks:
+  host-name: https://test.site.com
+
 test:
   file:
     number: 2

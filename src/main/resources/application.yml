@@ -41,3 +41,8 @@ storage:
 
 cleanup:
   cron.expression: "0 0 0/1 * * ?" # every hour
+
+bitlinks:
+  host-name: ${HOST_NAME}
+  url: https://api-ssl.bitly.com/v4/bitlinks
+  access-token: d7990efb07b77a63cc435ba89176854555b66b53
