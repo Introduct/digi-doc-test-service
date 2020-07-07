@@ -6,6 +6,7 @@ import com.ee.digi_doc.service.SigningDataService;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.dto.ContainerDto;
 import com.ee.digi_doc.web.dto.SigningDataDto;
+import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
 import org.digidoc4j.DigestAlgorithm;
 import org.junit.jupiter.api.Test;
@@ -13,11 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
+import static com.ee.digi_doc.util.FileGenerator.randomFile;
+import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ContainerRestControllerTest extends AbstractRestControllerTest {
 
@@ -30,6 +37,16 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     @Test
     void whenSignContainer_thenOk() throws Exception {
         assertContainer(ok(signContainer(createSignContainerRequest())));
+    }
+
+    @Test
+    void givenFileHasEmptyContentType_whenSignContainer_thenOk() throws Exception {
+        List<Long> fileIds = new ArrayList<>();
+
+        fileIds.add(getFileId(ok(createFile(randomTxtFile()))));
+        fileIds.add(getFileId(ok(createFile(randomFile(randomAlphabetic(10), 10, null)))));
+
+        assertContainer(ok(signContainer(createSignContainerRequest(createSigningDataRequest(fileIds)))));
     }
 
     @Test
@@ -63,6 +80,14 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     void givenContainerSigned_whenValidate_thenOk() throws Exception {
         ContainerDto containerDto = retrieveContainerDto(ok(signContainer(createSignContainerRequest())));
         assertValidateResult(ok(validateContainer(containerDto.getId())));
+    }
+
+    @Test
+    void givenContainerSigned_whenGenerateLink_thenOK() throws Exception {
+        ContainerDto containerDto = retrieveContainerDto(ok(signContainer(createSignContainerRequest())));
+        generateLink(containerDto.getId())
+                .andExpect(status().is2xxSuccessful())
+                .andExpect(jsonPath("$.link", is(notNullValue())));
     }
 
     @Test
@@ -104,6 +129,10 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
         return get("/containers/" + id + "/validate");
     }
 
+    private ResultActions generateLink(@NotNull Long id) throws Exception {
+        return get("/containers/" + id + "/link");
+    }
+
     private void assertContainer(ResultActions resultActions) throws Exception {
         resultActions.andExpect(jsonPath("$.id", is(notNullValue())))
                 .andExpect(jsonPath("$.name", is(notNullValue())))
@@ -123,7 +152,11 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     }
 
     private SignContainerRequest createSignContainerRequest() throws Exception {
-        SigningDataDto signingDataDto = retrieveSigningDataDto(ok(createSigningData(createSigningDataRequest())));
+        return createSignContainerRequest(createSigningDataRequest());
+    }
+
+    private SignContainerRequest createSignContainerRequest(CreateSigningDataRequest request) throws Exception {
+        SigningDataDto signingDataDto = retrieveSigningDataDto(ok(createSigningData(request)));
 
         SigningData signingData = signingDataService.getSigningData(signingDataDto.getId()).orElse(null);
         assertNotNull(signingData);

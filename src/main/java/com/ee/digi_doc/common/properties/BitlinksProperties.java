@@ -6,10 +6,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "upload")
-public class FileUploadProperties {
+@ConfigurationProperties(prefix = "bitlinks")
+public class BitlinksProperties {
 
-    private int maxNameLength;
-    private long maxSize;
+    private String hostName;
+    private String url;
+    private String accessToken;
 
 }

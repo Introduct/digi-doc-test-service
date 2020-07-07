@@ -43,7 +43,7 @@ class ContainerPurgeTaskTest {
     @BeforeEach
     public void before() {
         CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
-        createDataToSignRequest.setFileIds(List.of(fileService.create(FileGenerator.randomFile()).getId()));
+        createDataToSignRequest.setFileIds(List.of(fileService.create(FileGenerator.randomTxtFile()).getId()));
         createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
 
         SigningData signingData = signingDataService.create(createDataToSignRequest);

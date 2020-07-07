@@ -3,6 +3,7 @@ package com.ee.digi_doc.service;
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.Container;
+import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.util.TestSigningData;
@@ -22,10 +23,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.ee.digi_doc.storage.local.LocalStorageContainerRepository.getUniqueContainerName;
 import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueContainerName;
 import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueDataToSignName;
+import static com.ee.digi_doc.util.FileGenerator.randomFile;
+import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
@@ -57,6 +62,47 @@ class ContainerServiceTest {
 
         CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
         createDataToSignRequest.setFileIds(createFileIds());
+        createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
+
+        SigningData signingData = signingDataService.create(createDataToSignRequest);
+
+        String signatureInHex = TestSigningData.rsaSignData(signingData.getDataToSign(), DigestAlgorithm.SHA256);
+
+        SignContainerRequest signContainerRequest = new SignContainerRequest();
+        signContainerRequest.setSigningDataId(signingData.getId());
+        signContainerRequest.setSignatureInHex(signatureInHex);
+
+        Container container = containerService.signContainer(signContainerRequest);
+
+        assertNotNull(container);
+        assertNotNull(container.getId());
+        assertNotNull(container.getName());
+        assertNotNull(container.getContentType());
+        assertNotNull(container.getSignedOn());
+
+        assertEquals(signingData.getContainerName(), container.getName());
+        assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
+
+        assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
+        assertTrue(Files.exists(containerDirectoryPath.resolve(getUniqueContainerName(container))));
+
+        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
+        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
+    }
+
+    @Test
+    void givenFileHasEmptyContentType_whenSighContainer_thenOk() {
+        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+
+        List<File> filesToSign = new ArrayList<>();
+        filesToSign.add(fileService.create(randomFile(randomAlphabetic(10), 10, null)));
+        filesToSign.add(fileService.create(randomTxtFile()));
+
+        List<Long> fileIds = filesToSign.stream().map(File::getId).collect(Collectors.toList());
+
+        CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
+        createDataToSignRequest.setFileIds(fileIds);
         createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
 
         SigningData signingData = signingDataService.create(createDataToSignRequest);
@@ -175,7 +221,7 @@ class ContainerServiceTest {
     private List<Long> createFileIds() {
         List<Long> files = new ArrayList<>();
         for (int i = 0; i < fileNumber; i++) {
-            files.add(fileService.create(FileGenerator.randomFile()).getId());
+            files.add(fileService.create(FileGenerator.randomTxtFile()).getId());
         }
         return files;
     }

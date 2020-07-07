@@ -5,7 +5,6 @@ import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.dao.JpaSigningDataRepository;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.persistance.model.SigningData;
-import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import org.digidoc4j.Container;
@@ -26,6 +25,9 @@ import java.util.stream.Collectors;
 import static com.ee.digi_doc.storage.local.LocalStorageFileRepository.getUniqueFileName;
 import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueContainerName;
 import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueDataToSignName;
+import static com.ee.digi_doc.util.FileGenerator.randomFile;
+import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,6 +59,46 @@ class SigningDataServiceTest {
         Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
 
         List<File> filesToSign = createFiles();
+        List<Long> fileIds = filesToSign.stream().map(File::getId).collect(Collectors.toList());
+
+        CreateSigningDataRequest request = new CreateSigningDataRequest();
+        request.setFileIds(fileIds);
+        request.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
+
+        SigningData signingData = signingDataService.create(request);
+        assertNotNull(signingData);
+        assertNotNull(signingData.getId());
+        assertNotNull(signingData.getContainerName());
+        assertNotNull(signingData.getContainer());
+        assertNotNull(signingData.getDataToSignName());
+        assertNotNull(signingData.getDataToSign());
+        assertNotNull(signingData.getCreatedOn());
+        assertNotNull(signingData.getSignatureInHex());
+
+        assertTrue(signingData.getContainerName().endsWith("." + Container.DocumentType.BDOC.name().toLowerCase()));
+        assertTrue(signingData.getDataToSignName().endsWith(".bin"));
+
+        assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isPresent());
+
+        assertTrue(Files.exists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
+        assertTrue(Files.exists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
+
+        assertTrue(jpaFileRepository.findAllById(fileIds).isEmpty());
+
+        for (File file : filesToSign) {
+            assertTrue(Files.notExists(filesDirectoryPath.resolve(getUniqueFileName(file))));
+        }
+    }
+
+    @Test
+    void givenFileHasEmptyContentType_whenCreateDataToSign_thenOk() {
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
+
+        List<File> filesToSign = new ArrayList<>();
+        filesToSign.add(fileService.create(randomFile(randomAlphabetic(10), 10, null)));
+        filesToSign.add(fileService.create(randomTxtFile()));
+
         List<Long> fileIds = filesToSign.stream().map(File::getId).collect(Collectors.toList());
 
         CreateSigningDataRequest request = new CreateSigningDataRequest();
@@ -133,7 +175,7 @@ class SigningDataServiceTest {
     private List<File> createFiles() {
         List<File> files = new ArrayList<>();
         for (int i = 0; i < fileNumber; i++) {
-            files.add(fileService.create(FileGenerator.randomFile()));
+            files.add(fileService.create(randomTxtFile()));
         }
         return files;
     }

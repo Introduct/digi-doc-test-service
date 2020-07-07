@@ -55,6 +55,7 @@ public class GlobalControllerExceptionHandler extends ResponseEntityExceptionHan
                                                                   HttpHeaders headers, HttpStatus status,
                                                                   WebRequest request) {
         return ResponseEntity.status(status)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(createDigiDocApiError(ex.getBindingResult(), request));
     }
 

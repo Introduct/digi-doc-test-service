@@ -65,7 +65,7 @@ class SigningDataMapperTest {
     private List<Long> createFiles() {
         List<Long> fileIds = new ArrayList<>();
         for (int i = 0; i < fileNumber; i++) {
-            fileIds.add(fileService.create(FileGenerator.randomFile()).getId());
+            fileIds.add(fileService.create(FileGenerator.randomTxtFile()).getId());
         }
         return fileIds;
     }
