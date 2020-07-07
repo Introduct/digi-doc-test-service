@@ -8,6 +8,7 @@ import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import org.digidoc4j.Container;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +16,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.ee.digi_doc.storage.local.LocalStorageFileRepository.getUniqueFileName;
@@ -50,8 +53,30 @@ class SigningDataServiceTest {
     @Autowired
     private JpaFileRepository jpaFileRepository;
 
+    private static StorageProperties storageProperties;
+
     @Autowired
-    private StorageProperties storageProperties;
+    public void setStorageProperties(StorageProperties storageProperties) {
+        SigningDataServiceTest.storageProperties = storageProperties;
+    }
+
+    @AfterAll
+    public static void after() throws IOException {
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
+
+        if (signingDataDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(signingDataDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+
+        if (filesDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(filesDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+    }
 
     @Test
     void whenCreateDataToSign_thenOk() {

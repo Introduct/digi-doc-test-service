@@ -1,7 +1,9 @@
 package com.ee.digi_doc.web.controller;
 
 import com.ee.digi_doc.common.properties.FileUploadProperties;
+import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -9,6 +11,11 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
 
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
@@ -30,6 +37,24 @@ class FileRestControllerTest extends AbstractRestControllerTest {
 
     @Autowired
     private FileUploadProperties fileUploadProperties;
+
+    private static StorageProperties storageProperties;
+
+    @Autowired
+    public void setStorageProperties(StorageProperties storageProperties) {
+        FileRestControllerTest.storageProperties = storageProperties;
+    }
+
+    @AfterAll
+    public static void after() throws IOException {
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
+
+        if (filesDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(filesDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+    }
 
     @Test
     void whenCreateFile_thenOk() throws Exception {
