@@ -11,6 +11,7 @@ import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
 import org.digidoc4j.DigestAlgorithm;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.ee.digi_doc.storage.local.LocalStorageContainerRepository.getUniqueContainerName;
@@ -52,8 +55,30 @@ class ContainerServiceTest {
     @Autowired
     private JpaContainerRepository jpaContainerRepository;
 
+    private static StorageProperties storageProperties;
+
     @Autowired
-    private StorageProperties storageProperties;
+    public void setStorageProperties(StorageProperties storageProperties) {
+        ContainerServiceTest.storageProperties = storageProperties;
+    }
+
+    @AfterAll
+    public static void after() throws IOException {
+        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+
+        if (containerDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(containerDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+
+        if (signingDataDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(signingDataDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+    }
 
     @Test
     void whenSighContainer_thenOk() {

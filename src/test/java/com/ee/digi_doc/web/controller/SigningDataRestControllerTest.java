@@ -1,18 +1,25 @@
 package com.ee.digi_doc.web.controller;
 
+import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.dao.JpaSigningDataRepository;
 import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.web.dto.SigningDataDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
@@ -37,6 +44,31 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
 
     @Autowired
     private JpaSigningDataRepository jpaSigningDataRepository;
+
+    private static StorageProperties storageProperties;
+
+    @Autowired
+    public void setStorageProperties(StorageProperties storageProperties) {
+        SigningDataRestControllerTest.storageProperties = storageProperties;
+    }
+
+    @AfterAll
+    public static void after() throws IOException {
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
+
+        if (signingDataDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(signingDataDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+
+        if (filesDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(filesDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+    }
 
     @Test
     void whenCreateSigningData_thenOk() throws Exception {

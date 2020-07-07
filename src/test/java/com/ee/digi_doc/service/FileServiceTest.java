@@ -4,6 +4,7 @@ import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.InvalidFileNameException;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.model.File;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import static com.ee.digi_doc.storage.local.LocalStorageFileRepository.getUniqueFileName;
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
@@ -32,8 +35,23 @@ class FileServiceTest {
     @Autowired
     private JpaFileRepository repository;
 
+    private static StorageProperties storageProperties;
+
     @Autowired
-    private StorageProperties storageProperties;
+    public void setStorageProperties(StorageProperties storageProperties) {
+        FileServiceTest.storageProperties = storageProperties;
+    }
+
+    @AfterAll
+    public static void after() throws IOException {
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
+
+        if (filesDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(filesDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+    }
 
     @Test
     void whenCreateFile_thenOk() {

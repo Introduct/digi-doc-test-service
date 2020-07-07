@@ -1,5 +1,6 @@
 package com.ee.digi_doc.web.controller;
 
+import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.service.SigningDataService;
@@ -8,12 +9,17 @@ import com.ee.digi_doc.web.dto.ContainerDto;
 import com.ee.digi_doc.web.dto.SigningDataDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
+import org.apache.commons.io.FileUtils;
 import org.digidoc4j.DigestAlgorithm;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +39,21 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
 
     @Autowired
     private JpaContainerRepository jpaContainerRepository;
+
+    private static StorageProperties storageProperties;
+
+    @Autowired
+    public void setStorageProperties(StorageProperties storageProperties) {
+        ContainerRestControllerTest.storageProperties = storageProperties;
+    }
+
+    @AfterAll
+    public static void after() throws IOException {
+        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+        FileUtils.deleteDirectory(containerDirectoryPath.toFile());
+        FileUtils.deleteDirectory(signingDataDirectoryPath.toFile());
+    }
 
     @Test
     void whenSignContainer_thenOk() throws Exception {
