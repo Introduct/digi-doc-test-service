@@ -3,7 +3,6 @@ package com.ee.digi_doc.job;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.service.FileService;
 import com.ee.digi_doc.util.FileGenerator;
-import org.awaitility.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -12,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Duration;
 import java.util.List;
 
 import static org.awaitility.Awaitility.await;
@@ -35,7 +35,7 @@ class FilePurgeTaskTest {
 
     @Test
     void testTaskExecution() {
-        await().atMost(Duration.ONE_MINUTE)
+        await().atMost(Duration.ofMinutes(1))
                 .untilAsserted(() -> verify(task, atLeast(1)).cleanUp());
     }
 

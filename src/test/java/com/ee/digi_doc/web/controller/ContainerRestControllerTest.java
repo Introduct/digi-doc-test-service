@@ -9,7 +9,6 @@ import com.ee.digi_doc.web.dto.ContainerDto;
 import com.ee.digi_doc.web.dto.SigningDataDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
-import org.apache.commons.io.FileUtils;
 import org.digidoc4j.DigestAlgorithm;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -18,10 +17,12 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
@@ -51,8 +52,18 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     public static void after() throws IOException {
         Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
         Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
-        FileUtils.deleteDirectory(containerDirectoryPath.toFile());
-        FileUtils.deleteDirectory(signingDataDirectoryPath.toFile());
+
+        if (containerDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(containerDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
+
+        if (signingDataDirectoryPath.toFile().listFiles() != null ) {
+            for (java.io.File file : Objects.requireNonNull(signingDataDirectoryPath.toFile().listFiles())) {
+                Files.delete(file.toPath());
+            }
+        }
     }
 
     @Test
@@ -117,7 +128,7 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
         request.setSigningDataId(null);
 
         assertFieldError(badRequest(signContainer(request)), "NotNull", "signingDataId",
-                "must not be null");
+                MUST_NOT_BE_EMPTY_TEMPLATE);
     }
 
     @Test
@@ -126,7 +137,7 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
         request.setSignatureInHex(null);
 
         assertFieldError(badRequest(signContainer(request)), "NotEmpty", "signatureInHex",
-                "must not be empty");
+                MUST_NOT_BE_EMPTY_TEMPLATE);
     }
 
     @Test
@@ -135,7 +146,7 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
         request.setSignatureInHex("");
 
         assertFieldError(badRequest(signContainer(request)), "NotEmpty", "signatureInHex",
-                "must not be empty");
+                MUST_NOT_BE_EMPTY_TEMPLATE);
     }
 
     private ResultActions signContainer(@NotNull SignContainerRequest request) throws Exception {

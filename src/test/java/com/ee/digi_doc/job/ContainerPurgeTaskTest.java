@@ -9,7 +9,6 @@ import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
-import org.awaitility.Duration;
 import org.digidoc4j.DigestAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Duration;
 import java.util.List;
 
 import static org.awaitility.Awaitility.await;
@@ -61,7 +61,7 @@ class ContainerPurgeTaskTest {
 
     @Test
     void testTaskExecution() {
-        await().atMost(Duration.ONE_MINUTE)
+        await().atMost(Duration.ofMinutes(1))
                 .untilAsserted(() -> verify(task, atLeast(1)).cleanUp());
     }
 
