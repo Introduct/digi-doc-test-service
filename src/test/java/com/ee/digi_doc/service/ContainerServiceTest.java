@@ -12,6 +12,7 @@ import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.digidoc4j.DigestAlgorithm;
 import org.junit.jupiter.api.AfterAll;
@@ -142,6 +143,7 @@ class ContainerServiceTest {
         assertTrue(Files.notExists(getSigningDataPath(signingData, signingData.getDataToSignName())));
     }
 
+    @SneakyThrows
     @Test
     void whenGetSignedContainer_thenOk() {
         CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
@@ -167,6 +169,7 @@ class ContainerServiceTest {
         assertNotNull(container.getName());
         assertNotNull(container.getContentType());
         assertNotNull(container.getSignedOn());
+        assertNotNull(container.getContent());
 
         assertEquals(signingData.getContainerName(), container.getName());
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());

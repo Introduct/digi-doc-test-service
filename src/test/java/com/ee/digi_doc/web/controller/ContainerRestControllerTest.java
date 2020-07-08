@@ -115,6 +115,13 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
     }
 
     @Test
+    void givenContainerNotSigned_whenGenerateLink_thenNotFound() throws Exception {
+        long notExistingContainerId = getNotExistingContainerId();
+        assertErrorMessage(notFound(generateLink(notExistingContainerId)), RESOURCE_NOT_FOUND_TEMPLATE,
+                notExistingContainerId);
+    }
+
+    @Test
     void givenSigningDataIdNull_whenSignContainer_thenBadRequest() throws Exception {
         SignContainerRequest request = createSignContainerRequest();
         request.setSigningDataId(null);

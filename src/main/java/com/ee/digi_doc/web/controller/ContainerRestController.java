@@ -37,11 +37,7 @@ public class ContainerRestController {
 
     @GetMapping("/{id}")
     public ResponseEntity<byte[]> getContainer(@PathVariable Long id) {
-        Container container = containerService.get(id).orElseThrow(() -> new ResourceNotFoundException(id));
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(container.getContentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + container.getName())
-                .body(container.getContent());
+        return containerService.getAsResponseEntry(id).orElseThrow(() -> new ResourceNotFoundException(id));
     }
 
     @GetMapping(value = "/{id}/validate", produces = APPLICATION_JSON_VALUE)

@@ -3,6 +3,7 @@ package com.ee.digi_doc.persistance.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 @Entity
@@ -33,8 +34,7 @@ public class Container {
         setSignedOn(LocalDateTime.now());
     }
 
-    @SneakyThrows
-    public byte[] getContent() {
+    public byte[] getContent() throws IOException {
         return bdDocContainer.saveAsStream().readAllBytes();
     }
 }
