@@ -33,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 public abstract class AbstractRestControllerTest {
 
+    protected static final String MUST_NOT_BE_EMPTY_TEMPLATE = "Must not be empty.";
     protected static final String RESOURCE_NOT_FOUND_TEMPLATE = "Resource with id %s has not been found.";
 
     @Value("${test.file.number:10}")

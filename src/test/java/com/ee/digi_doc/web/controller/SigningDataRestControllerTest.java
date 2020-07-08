@@ -31,10 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class SigningDataRestControllerTest extends AbstractRestControllerTest {
 
-    public static final String MAX_FILE_COUNT_EXCEEDED_TEMPLATE = "Max file count to sign is %s.";
-    public static final String EMPTY_CERTIFICATE_IN_HEX_TEMPLATE = "Certificate in hex key is required.";
-    public static final String EMPTY_FILE_IDS_TEMPLATE = "File ids key is required.";
-    public static final String NOT_ALL_FILES_FOUNT_TEMPLATE = "Not all files are found by provided file ids.";
+    private static final String MAX_FILE_COUNT_EXCEEDED_TEMPLATE = "Max file count is exceeded.";
+    private static final String NOT_ALL_FILES_FOUNT_TEMPLATE = "Not all files are found by provided file ids.";
 
     @Value("${sign.max-file-count}")
     private int maxFileCount;
@@ -57,13 +55,13 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
         Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
         Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
 
-        if (signingDataDirectoryPath.toFile().listFiles() != null ) {
+        if (signingDataDirectoryPath.toFile().listFiles() != null) {
             for (java.io.File file : Objects.requireNonNull(signingDataDirectoryPath.toFile().listFiles())) {
                 Files.delete(file.toPath());
             }
         }
 
-        if (filesDirectoryPath.toFile().listFiles() != null ) {
+        if (filesDirectoryPath.toFile().listFiles() != null) {
             for (java.io.File file : Objects.requireNonNull(filesDirectoryPath.toFile().listFiles())) {
                 Files.delete(file.toPath());
             }
@@ -103,8 +101,8 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
         CreateSigningDataRequest request = createSigningDataRequest();
         request.setFileIds(null);
 
-        assertFieldError(badRequest(createSigningData(request)), "Validation.SigningData.EmptyFileIds",
-                "fileIds", EMPTY_FILE_IDS_TEMPLATE);
+        assertFieldError(badRequest(createSigningData(request)), "NotEmpty",
+                "fileIds", MUST_NOT_BE_EMPTY_TEMPLATE);
     }
 
     @Test
@@ -112,8 +110,8 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
         CreateSigningDataRequest request = createSigningDataRequest();
         request.setFileIds(new ArrayList<>());
 
-        assertFieldError(badRequest(createSigningData(request)), "Validation.SigningData.EmptyFileIds",
-                "fileIds", EMPTY_FILE_IDS_TEMPLATE);
+        assertFieldError(badRequest(createSigningData(request)), "NotEmpty",
+                "fileIds", MUST_NOT_BE_EMPTY_TEMPLATE);
     }
 
     @Test
@@ -121,8 +119,8 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
         CreateSigningDataRequest request = createSigningDataRequest();
         request.setCertificateInHex(null);
 
-        assertFieldError(badRequest(createSigningData(request)), "Validation.SigningData.EmptyCertificateInHex",
-                "certificateInHex", EMPTY_CERTIFICATE_IN_HEX_TEMPLATE);
+        assertFieldError(badRequest(createSigningData(request)), "NotEmpty",
+                "certificateInHex", MUST_NOT_BE_EMPTY_TEMPLATE);
     }
 
     @Test
@@ -130,15 +128,15 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
         CreateSigningDataRequest request = createSigningDataRequest();
         request.setCertificateInHex("");
 
-        assertFieldError(badRequest(createSigningData(request)), "Validation.SigningData.EmptyCertificateInHex",
-                "certificateInHex", EMPTY_CERTIFICATE_IN_HEX_TEMPLATE);
+        assertFieldError(badRequest(createSigningData(request)), "NotEmpty",
+                "certificateInHex", MUST_NOT_BE_EMPTY_TEMPLATE);
     }
 
     @Test
     void givenNotAllFileExist_whenCreateSigningData_thenBadRequest() throws Exception {
         CreateSigningDataRequest request = createSigningDataRequest();
         request.getFileIds().add(getNotExistingFileId());
-        assertFieldError(badRequest(createSigningData(request)), "Validation.SigningData.NotAllFilesExist",
+        assertFieldError(badRequest(createSigningData(request)), "ValidExistingFileIds",
                 "fileIds", NOT_ALL_FILES_FOUNT_TEMPLATE);
     }
 
@@ -148,7 +146,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
         request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
         request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
         request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
-        assertFieldError(badRequest(createSigningData(request)), "Validation.SigningData.MaxFileCount",
+        assertFieldError(badRequest(createSigningData(request)), "ValidFileIdsCount",
                 "fileIds", MAX_FILE_COUNT_EXCEEDED_TEMPLATE, maxFileCount);
     }
 
