@@ -5,11 +5,14 @@ import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.persistance.model.SigningData;
+import com.ee.digi_doc.storage.local.util.HexUtils;
 import com.ee.digi_doc.util.FileGenerator;
+import com.ee.digi_doc.util.FileUtils;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import com.ee.digi_doc.web.request.SignContainerRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.digidoc4j.DigestAlgorithm;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -25,12 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.ee.digi_doc.storage.local.LocalStorageContainerRepository.getUniqueContainerName;
-import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueContainerName;
-import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueDataToSignName;
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -64,27 +63,17 @@ class ContainerServiceTest {
 
     @AfterAll
     public static void after() throws IOException {
-        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
-        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath());
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath());
+        Path fileDirectoryPath = Paths.get(storageProperties.getFile().getPath());
 
-        if (containerDirectoryPath.toFile().listFiles() != null ) {
-            for (java.io.File file : Objects.requireNonNull(containerDirectoryPath.toFile().listFiles())) {
-                Files.delete(file.toPath());
-            }
-        }
-
-        if (signingDataDirectoryPath.toFile().listFiles() != null ) {
-            for (java.io.File file : Objects.requireNonNull(signingDataDirectoryPath.toFile().listFiles())) {
-                Files.delete(file.toPath());
-            }
-        }
+        FileUtils.cleanUp(containerDirectoryPath);
+        FileUtils.cleanUp(signingDataDirectoryPath);
+        FileUtils.cleanUp(fileDirectoryPath);
     }
 
     @Test
     void whenSighContainer_thenOk() {
-        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
-        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
-
         CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
         createDataToSignRequest.setFileIds(createFileIds());
         createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
@@ -109,17 +98,14 @@ class ContainerServiceTest {
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
-        assertTrue(Files.exists(containerDirectoryPath.resolve(getUniqueContainerName(container))));
+        assertTrue(Files.exists(getContainerPath(container)));
 
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
+        assertTrue(Files.notExists(getSigningDataPath(signingData, signingData.getContainerName())));
+        assertTrue(Files.notExists(getSigningDataPath(signingData, signingData.getDataToSignName())));
     }
 
     @Test
     void givenFileHasEmptyContentType_whenSighContainer_thenOk() {
-        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
-        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
-
         List<File> filesToSign = new ArrayList<>();
         filesToSign.add(fileService.create(randomFile(randomAlphabetic(10), 10, null)));
         filesToSign.add(fileService.create(randomTxtFile()));
@@ -150,10 +136,10 @@ class ContainerServiceTest {
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
-        assertTrue(Files.exists(containerDirectoryPath.resolve(getUniqueContainerName(container))));
+        assertTrue(Files.exists(getContainerPath(container)));
 
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
+        assertTrue(Files.notExists(getSigningDataPath(signingData, signingData.getContainerName())));
+        assertTrue(Files.notExists(getSigningDataPath(signingData, signingData.getDataToSignName())));
     }
 
     @Test
@@ -218,8 +204,6 @@ class ContainerServiceTest {
 
     @Test
     void whenDeleteContainer_thenOk() {
-        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
-
         CreateSigningDataRequest createDataToSignRequest = new CreateSigningDataRequest();
         createDataToSignRequest.setFileIds(createFileIds());
         createDataToSignRequest.setCertificateInHex(TestSigningData.getRSASigningCertificateInHex());
@@ -234,13 +218,15 @@ class ContainerServiceTest {
 
         Container container = containerService.signContainer(signContainerRequest);
 
+        Path containerPath = getContainerPath(container);
+
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
-        assertTrue(Files.exists(containerDirectoryPath.resolve(getUniqueContainerName(container))));
+        assertTrue(Files.exists(containerPath));
 
         containerService.delete(container);
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isEmpty());
-        assertTrue(Files.notExists(containerDirectoryPath.resolve(getUniqueContainerName(container))));
+        assertTrue(Files.notExists(containerPath));
     }
 
     private List<Long> createFileIds() {
@@ -249,6 +235,18 @@ class ContainerServiceTest {
             files.add(fileService.create(FileGenerator.randomTxtFile()).getId());
         }
         return files;
+    }
+
+    private Path getSigningDataPath(SigningData signingData, String name) {
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath());
+        String containerPath = StringUtils.join(new Object[]{HexUtils.getSigningDataHex(signingData), name}, "/");
+        return signingDataDirectoryPath.resolve(containerPath).normalize();
+    }
+
+    private Path getContainerPath(Container container) {
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getContainer().getPath());
+        String containerPath = StringUtils.join(new Object[]{HexUtils.getContainerHex(container), container.getName()}, "/");
+        return signingDataDirectoryPath.resolve(containerPath).normalize();
     }
 
 }

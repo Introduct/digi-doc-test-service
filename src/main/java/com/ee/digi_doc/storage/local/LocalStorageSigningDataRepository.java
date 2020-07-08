@@ -7,15 +7,14 @@ import com.ee.digi_doc.exception.FileNotReadException;
 import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.storage.StorageSigningDataRepository;
+import com.ee.digi_doc.storage.local.util.HexUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Container;
 import org.digidoc4j.DataToSign;
 import org.digidoc4j.impl.asic.asice.bdoc.BDocContainerBuilder;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.PostConstruct;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,86 +32,121 @@ public class LocalStorageSigningDataRepository implements StorageSigningDataRepo
         this.configuration = new Configuration(properties.getMode());
     }
 
-    @PostConstruct
-    public void init() {
-        if (Files.notExists(signingDataStorageLocation)) {
-            try {
-                Files.createDirectories(signingDataStorageLocation);
-            } catch (IOException e) {
-                throw new RuntimeException("Could not create directory for signing data", e);
-            }
-        }
-    }
-
     @Override
     public void storeSigningData(SigningData signingData) {
-        Path containerPath = signingDataStorageLocation.resolve(getUniqueContainerName(signingData)).normalize();
-        Path dataToSignPath = signingDataStorageLocation.resolve(getUniqueDataToSignName(signingData)).normalize();
+        try {
+            log.info("Store signing data: {}", signingData);
 
-        try (OutputStream outputStream = new FileOutputStream(containerPath.toFile())) {
-            signingData.getContainer().save(outputStream);
-        } catch (IOException e) {
-            log.error("Error obtained during container write", e);
-            throw new FileNotWrittenException(getUniqueContainerName(signingData));
-        }
+            String signingDataHash = HexUtils.getSigningDataHex(signingData);
+            log.debug("Signing data hash: {}", signingData);
 
-        try (ObjectOutput objectOutput = new ObjectOutputStream(new FileOutputStream(dataToSignPath.toFile()))) {
-            objectOutput.writeObject(signingData.getDataToSign());
+            Path signingDataDirectoryPath = Files.createDirectories(signingDataStorageLocation.resolve(signingDataHash));
+            log.debug("Signing data directory path: {}", signingDataDirectoryPath);
+
+            Path containerPath = signingDataDirectoryPath.resolve(signingData.getContainerName()).normalize();
+            log.debug("Container of signing data path: {}", containerPath);
+
+            Path dataToSignPath = signingDataDirectoryPath.resolve(signingData.getDataToSignName()).normalize();
+            log.debug("ata to sign of signing data path: {}", containerPath);
+
+            try (OutputStream outputStream = new FileOutputStream(containerPath.toFile())) {
+                signingData.getContainer().save(outputStream);
+                log.info("Container of signing data has been successfully stored");
+            } catch (IOException e) {
+                log.error("Error obtained during container write", e);
+                throw new FileNotWrittenException(signingData.getId());
+            }
+
+            try (ObjectOutput objectOutput = new ObjectOutputStream(new FileOutputStream(dataToSignPath.toFile()))) {
+                objectOutput.writeObject(signingData.getDataToSign());
+                log.info("Data to sign of signing data has been successfully stored");
+            } catch (IOException e) {
+                log.error("Error obtained during data to sign write", e);
+                throw new FileNotWrittenException(signingData.getId());
+            }
         } catch (IOException e) {
             log.error("Error obtained during data to sign write", e);
-            throw new FileNotWrittenException(getUniqueDataToSignName(signingData));
+            throw new FileNotWrittenException(signingData.getId());
         }
     }
 
     @Override
     public Container getContainer(SigningData signingData) {
-        Path containerPath = signingDataStorageLocation.resolve(getUniqueContainerName(signingData)).normalize();
+        log.info("Get container of signing data: {}", signingData);
+
+        Path containerPath = getSigningDataPath(signingData, signingData.getContainerName());
+        log.debug("Container of signing data  path: {}", containerPath);
+
         try (InputStream inputStream = new FileInputStream(containerPath.toFile())) {
-            return BDocContainerBuilder.aContainer().fromStream(inputStream).withConfiguration(configuration).build();
+            Container container = BDocContainerBuilder.aContainer()
+                    .fromStream(inputStream)
+                    .withConfiguration(configuration)
+                    .build();
+            log.info("Container of signing data has been successfully read");
+            return container;
         } catch (IOException e) {
             log.error("Error obtained during container read", e);
-            throw new FileNotReadException(getUniqueContainerName(signingData));
+            throw new FileNotReadException(signingData.getId());
         }
     }
 
     @Override
     public DataToSign getDataToSign(SigningData signingData) {
-        Path dataToSignPath = signingDataStorageLocation.resolve(getUniqueDataToSignName(signingData)).normalize();
+        log.info("Get data to sign of signing data: {}", signingData);
+
+        Path dataToSignPath = getSigningDataPath(signingData, signingData.getDataToSignName());
+        log.debug("Data to sign of signing data  path: {}", dataToSignPath);
+
         try (ObjectInput objectInput = new ObjectInputStream(new FileInputStream(dataToSignPath.toFile()))) {
-            return (DataToSign) objectInput.readObject();
+            DataToSign dataToSign = (DataToSign) objectInput.readObject();
+            log.info("Data to sign of signing data has been successfully read");
+            return dataToSign;
         } catch (IOException | ClassNotFoundException e) {
             log.error("Error obtained during data to sign read", e);
-            throw new FileNotReadException(getUniqueDataToSignName(signingData));
+            throw new FileNotReadException(signingData.getId());
         }
     }
 
     @Override
     public void deleteContainer(SigningData signingData) {
         try {
-            Path containerPath = signingDataStorageLocation.resolve(getUniqueContainerName(signingData)).normalize();
+            log.info("Delete container of signing data: {}", signingData);
+
+            Path containerPath = getSigningDataPath(signingData, signingData.getContainerName());
+            log.debug("Container of signing data  path: {}", containerPath);
+
             Files.delete(containerPath);
+            log.info("Container of signing data has been successfully deleted");
         } catch (IOException e) {
-            log.error("Error obtained during container delete: " + getUniqueContainerName(signingData), e);
-            throw new FileNotDeletedException(getUniqueContainerName(signingData));
+            log.error("Error obtained during container delete: ", e);
+            throw new FileNotDeletedException(signingData.getId());
         }
     }
 
     @Override
     public void deleteDataToSigh(SigningData signingData) {
         try {
-            Path dataToSignPath = signingDataStorageLocation.resolve(getUniqueDataToSignName(signingData)).normalize();
+            log.info("Delete data to sign of signing data: {}", signingData);
+
+            Path dataToSignPath = getSigningDataPath(signingData, signingData.getDataToSignName());
+            log.debug("Data to sign of signing data  path: {}", dataToSignPath);
+
             Files.delete(dataToSignPath);
+            log.info("Data to sign of signing data has been successfully deleted");
         } catch (IOException e) {
-            log.error("Error obtained during data to sign delete: " + getUniqueDataToSignName(signingData), e);
-            throw new FileNotDeletedException(getUniqueDataToSignName(signingData));
+            log.error("Error obtained during data to sign delete: ", e);
+            throw new FileNotDeletedException(signingData.getId());
         }
     }
 
-    public static String getUniqueContainerName(SigningData signingData) {
-        return StringUtils.join(new Object[]{signingData.getId(), signingData.getContainerName()}, "-");
+    private Path getSigningDataPath(SigningData signingData, String entityName) {
+        String signingDataHash = HexUtils.getSigningDataHex(signingData);
+        log.debug("Signing data hash: {}", signingData);
+
+        Path signingDataDirectoryPath = signingDataStorageLocation.resolve(signingDataHash);
+        log.debug("Signing data directory path: {}", signingDataDirectoryPath);
+
+        return signingDataDirectoryPath.resolve(entityName).normalize();
     }
 
-    public static String getUniqueDataToSignName(SigningData signingData) {
-        return StringUtils.join(new Object[]{signingData.getId(), signingData.getDataToSignName()}, "-");
-    }
 }

@@ -4,6 +4,7 @@ import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.service.SigningDataService;
+import com.ee.digi_doc.util.FileUtils;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.dto.ContainerDto;
 import com.ee.digi_doc.web.dto.SigningDataDto;
@@ -17,12 +18,10 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
@@ -50,20 +49,13 @@ class ContainerRestControllerTest extends AbstractRestControllerTest {
 
     @AfterAll
     public static void after() throws IOException {
-        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath()).toAbsolutePath().normalize();
-        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
+        Path containerDirectoryPath = Paths.get(storageProperties.getContainer().getPath());
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath());
+        Path fileDirectoryPath = Paths.get(storageProperties.getFile().getPath());
 
-        if (containerDirectoryPath.toFile().listFiles() != null ) {
-            for (java.io.File file : Objects.requireNonNull(containerDirectoryPath.toFile().listFiles())) {
-                Files.delete(file.toPath());
-            }
-        }
-
-        if (signingDataDirectoryPath.toFile().listFiles() != null ) {
-            for (java.io.File file : Objects.requireNonNull(signingDataDirectoryPath.toFile().listFiles())) {
-                Files.delete(file.toPath());
-            }
-        }
+        FileUtils.cleanUp(containerDirectoryPath);
+        FileUtils.cleanUp(signingDataDirectoryPath);
+        FileUtils.cleanUp(fileDirectoryPath);
     }
 
     @Test

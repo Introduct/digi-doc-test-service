@@ -7,10 +7,10 @@ import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.storage.StorageFileRepository;
+import com.ee.digi_doc.storage.local.util.HexUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,54 +27,79 @@ public class LocalStorageFileRepository implements StorageFileRepository {
         this.fileStorageLocation = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
     }
 
-    @PostConstruct
-    public void init() {
-        if (Files.notExists(fileStorageLocation)) {
-            try {
-                Files.createDirectories(fileStorageLocation);
-            } catch (IOException e) {
-                throw new RuntimeException("Could not create directory for files", e);
-            }
-        }
-    }
-
     @Override
     public void storeFile(File file) {
         try {
-            Files.write(fileStorageLocation.resolve(getUniqueFileName(file)), file.getContent());
+            log.info("Store file: {}", file);
+
+            String fileHash = HexUtils.getFileHex(file);
+            log.debug("File hash: {}", fileHash);
+
+            Path fileDirectoryPath = Files.createDirectories(fileStorageLocation.resolve(fileHash));
+            log.debug("File directory path: {}", fileDirectoryPath);
+
+            Path filePath = fileDirectoryPath.resolve(file.getName()).normalize();
+            log.debug("File path: {}", filePath.toString());
+
+            Files.write(filePath, file.getContent());
+            log.info("File has been successfully stored");
         } catch (IOException e) {
             log.error("Exception obtained during file write", e);
-            throw new FileNotWrittenException(getUniqueFileName(file));
+            throw new FileNotWrittenException(file.getName());
         }
     }
 
     @Override
     public Optional<byte[]> getFileContent(File file) {
         try {
-            Path filePath = fileStorageLocation.resolve(getUniqueFileName(file)).normalize();
-            return Files.exists(filePath) ? Optional.of(Files.readAllBytes(filePath)) : Optional.empty();
+            log.info("Get file content, file: {}", file);
+
+            Path filePath = getExistingFilePath(file);
+            log.debug("File path: {}", filePath.toString());
+
+            if (Files.exists(filePath)) {
+                log.debug("File content has been found");
+                byte[] content = Files.readAllBytes(filePath);
+                log.info("File content has been successfully read");
+                return Optional.of(content);
+            } else {
+                log.debug("File content has not been found");
+                return Optional.empty();
+            }
         } catch (IOException e) {
             log.error("Exception obtained during file read from local storage", e);
-            throw new FileNotReadException(getUniqueFileName(file));
+            throw new FileNotReadException(file.getName());
         }
     }
 
     @Override
     public void deleteFile(File file) {
         try {
-            Path filePath = fileStorageLocation.resolve(getUniqueFileName(file)).normalize();
+            log.info("Delete file: {}", file);
+
+            Path filePath = getExistingFilePath(file);
+            log.debug("File path: {}", filePath.toString());
 
             if (!Files.exists(filePath)) {
-                throw new ResourceNotFoundException(getUniqueFileName(file));
+                log.debug("File content has not been found");
+                throw new ResourceNotFoundException(file.getName());
             }
             Files.delete(filePath);
+            log.info("File has been successfully deleted");
         } catch (IOException e) {
             log.error("Exception obtained during file delete from local storage", e);
-            throw new FileNotDeletedException(getUniqueFileName(file));
+            throw new FileNotDeletedException(file.getName());
         }
     }
 
-    public static String getUniqueFileName(File file) {
-        return org.apache.commons.lang3.StringUtils.join(new Object[]{file.getId(), file.getName()}, "-");
+    private Path getExistingFilePath(File file) {
+        String fileHash = HexUtils.getFileHex(file);
+        log.debug("File hash: {}", fileHash);
+
+        Path fileDirectoryPath = fileStorageLocation.resolve(fileHash);
+        log.debug("File directory path: {}", fileDirectoryPath);
+
+        return fileDirectoryPath.resolve(file.getName()).normalize();
     }
+
 }

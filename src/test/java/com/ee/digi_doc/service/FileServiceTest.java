@@ -4,6 +4,9 @@ import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.InvalidFileNameException;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.model.File;
+import com.ee.digi_doc.storage.local.util.HexUtils;
+import com.ee.digi_doc.util.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -17,9 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 
-import static com.ee.digi_doc.storage.local.LocalStorageFileRepository.getUniqueFileName;
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -44,20 +45,14 @@ class FileServiceTest {
 
     @AfterAll
     public static void after() throws IOException {
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
-        if (filesDirectoryPath.toFile().listFiles() != null ) {
-            for (java.io.File file : Objects.requireNonNull(filesDirectoryPath.toFile().listFiles())) {
-                Files.delete(file.toPath());
-            }
-        }
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath();
+        FileUtils.cleanUp(filesDirectoryPath);
     }
 
     @Test
     void whenCreateFile_thenOk() {
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
         MockMultipartFile expectedMultipartFile = randomTxtFile();
+
         File actualFile = service.create(expectedMultipartFile);
 
         assertNotNull(actualFile);
@@ -70,14 +65,13 @@ class FileServiceTest {
         assertEquals(expectedMultipartFile.getContentType(), actualFile.getContentType());
 
         assertTrue(repository.findById(actualFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(getUniqueFileName(actualFile))));
+        assertTrue(Files.exists(getFilePath(actualFile)));
     }
 
     @Test
     void givenFileHasEmptyContentType_whenCreate_thenOk() {
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
         MockMultipartFile expectedMultipartFile = randomFile(randomAlphabetic(10), 10, null);
+
         File actualFile = service.create(expectedMultipartFile);
 
         assertNotNull(actualFile);
@@ -90,17 +84,17 @@ class FileServiceTest {
         assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, actualFile.getContentType());
 
         assertTrue(repository.findById(actualFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(getUniqueFileName(actualFile))));
+        assertTrue(Files.exists(getFilePath(actualFile)));
     }
 
     @Test
     void whenGetFile_thenOk() {
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
         File expectedFile = service.create(randomTxtFile());
 
+        Path expectedFilePath = getFilePath(expectedFile);
+
         assertTrue(repository.findById(expectedFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(getUniqueFileName(expectedFile))));
+        assertTrue(Files.exists(expectedFilePath));
 
         File actualFile = service.get(expectedFile.getId()).orElse(null);
 
@@ -118,32 +112,32 @@ class FileServiceTest {
 
     @Test
     void whenDeleteFileById_thenOk() {
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
         File createdFile = service.create(randomTxtFile());
 
+        Path filePath = getFilePath(createdFile);
+
         assertTrue(repository.findById(createdFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(getUniqueFileName(createdFile))));
+        assertTrue(Files.exists(filePath));
 
         service.delete(createdFile.getId());
 
         assertTrue(repository.findById(createdFile.getId()).isEmpty());
-        assertTrue(Files.notExists(filesDirectoryPath.resolve(getUniqueFileName(createdFile))));
+        assertTrue(Files.notExists(filePath));
     }
 
     @Test
     void whenDeleteFile_thenOk() {
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
         File createdFile = service.create(randomTxtFile());
 
+        Path filePath = getFilePath(createdFile);
+
         assertTrue(repository.findById(createdFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(getUniqueFileName(createdFile))));
+        assertTrue(Files.exists(filePath));
 
         service.delete(createdFile);
 
         assertTrue(repository.findById(createdFile.getId()).isEmpty());
-        assertTrue(Files.notExists(filesDirectoryPath.resolve(getUniqueFileName(createdFile))));
+        assertTrue(Files.notExists(filePath));
     }
 
     @Test
@@ -156,27 +150,36 @@ class FileServiceTest {
 
     @Test
     void givenFileUploadedTwice_whenDeleteFirst_thenSecondExists() {
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
         MockMultipartFile multipartFile = randomTxtFile();
+
         File firstFile = service.create(multipartFile);
         File secondFile = service.create(multipartFile);
 
+        Path firstFilePath = getFilePath(firstFile);
+        Path secondFilePath = getFilePath(secondFile);
+
         assertTrue(repository.findById(firstFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(getUniqueFileName(firstFile))));
+        assertTrue(Files.exists(firstFilePath));
 
         assertTrue(repository.findById(secondFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(getUniqueFileName(secondFile))));
+        assertTrue(Files.exists(secondFilePath));
 
         service.delete(firstFile.getId());
 
         assertTrue(repository.findById(firstFile.getId()).isEmpty());
-        assertTrue(Files.notExists(filesDirectoryPath.resolve(getUniqueFileName(firstFile))));
+        assertTrue(Files.notExists(firstFilePath));
 
         assertTrue(service.get(secondFile.getId()).isPresent());
 
         assertTrue(repository.findById(secondFile.getId()).isPresent());
-        assertTrue(Files.exists(filesDirectoryPath.resolve(getUniqueFileName(secondFile))));
+        assertTrue(Files.exists(secondFilePath));
     }
+
+    private Path getFilePath(File file) {
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath());
+        String filePath = StringUtils.join(new Object[]{HexUtils.getFileHex(file), file.getName()}, "/");
+        return filesDirectoryPath.resolve(filePath).normalize();
+    }
+
 
 }
