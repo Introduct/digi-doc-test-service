@@ -125,7 +125,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
     @Test
     void givenNotAllFileExist_whenCreateSigningData_thenBadRequest() throws Exception {
         CreateSigningDataRequest request = createSigningDataRequest();
-        request.getFileIds().add(getNotExistingFileId());
+        request.getFileIds().set(0, getNotExistingFileId());
         assertFieldError(badRequest(createSigningData(request)), "ValidExistingFileIds",
                 "fileIds", NOT_ALL_FILES_FOUNT_TEMPLATE);
     }
