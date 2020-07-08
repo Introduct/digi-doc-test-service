@@ -5,8 +5,11 @@ import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.dao.JpaSigningDataRepository;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.persistance.model.SigningData;
+import com.ee.digi_doc.storage.local.LocalStorageFileRepository;
+import com.ee.digi_doc.util.FileUtils;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.digidoc4j.Container;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -22,12 +25,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.ee.digi_doc.storage.local.LocalStorageFileRepository.getUniqueFileName;
-import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueContainerName;
-import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getUniqueDataToSignName;
+import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getSigningDataHash;
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -62,27 +62,15 @@ class SigningDataServiceTest {
 
     @AfterAll
     public static void after() throws IOException {
-        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath());
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath());
 
-        if (signingDataDirectoryPath.toFile().listFiles() != null ) {
-            for (java.io.File file : Objects.requireNonNull(signingDataDirectoryPath.toFile().listFiles())) {
-                Files.delete(file.toPath());
-            }
-        }
-
-        if (filesDirectoryPath.toFile().listFiles() != null ) {
-            for (java.io.File file : Objects.requireNonNull(filesDirectoryPath.toFile().listFiles())) {
-                Files.delete(file.toPath());
-            }
-        }
+        FileUtils.cleanUp(signingDataDirectoryPath);
+        FileUtils.cleanUp(filesDirectoryPath);
     }
 
     @Test
     void whenCreateDataToSign_thenOk() {
-        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
         List<File> filesToSign = createFiles();
         List<Long> fileIds = filesToSign.stream().map(File::getId).collect(Collectors.toList());
 
@@ -105,21 +93,18 @@ class SigningDataServiceTest {
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isPresent());
 
-        assertTrue(Files.exists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
-        assertTrue(Files.exists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
+        assertTrue(Files.exists(getContainerPath(signingData)));
+        assertTrue(Files.exists(getDataToSignPath(signingData)));
 
         assertTrue(jpaFileRepository.findAllById(fileIds).isEmpty());
 
         for (File file : filesToSign) {
-            assertTrue(Files.notExists(filesDirectoryPath.resolve(getUniqueFileName(file))));
+            assertTrue(Files.notExists(getFilePath(file)));
         }
     }
 
     @Test
     void givenFileHasEmptyContentType_whenCreateDataToSign_thenOk() {
-        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
         List<File> filesToSign = new ArrayList<>();
         filesToSign.add(fileService.create(randomFile(randomAlphabetic(10), 10, null)));
         filesToSign.add(fileService.create(randomTxtFile()));
@@ -145,13 +130,13 @@ class SigningDataServiceTest {
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isPresent());
 
-        assertTrue(Files.exists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
-        assertTrue(Files.exists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
+        assertTrue(Files.exists(getContainerPath(signingData)));
+        assertTrue(Files.exists(getDataToSignPath(signingData)));
 
         assertTrue(jpaFileRepository.findAllById(fileIds).isEmpty());
 
         for (File file : filesToSign) {
-            assertTrue(Files.notExists(filesDirectoryPath.resolve(getUniqueFileName(file))));
+            assertTrue(Files.notExists(getFilePath(file)));
         }
     }
 
@@ -180,8 +165,6 @@ class SigningDataServiceTest {
 
     @Test
     void whenDeleteDataToSign_thenOK() {
-        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath()).toAbsolutePath().normalize();
-
         List<Long> fileIds = createFiles().stream().map(File::getId).collect(Collectors.toList());
 
         CreateSigningDataRequest request = new CreateSigningDataRequest();
@@ -193,8 +176,9 @@ class SigningDataServiceTest {
         signingDataService.delete(signingData);
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isEmpty());
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueContainerName(signingData))));
-        assertTrue(Files.notExists(signingDataDirectoryPath.resolve(getUniqueDataToSignName(signingData))));
+
+        assertTrue(Files.notExists(getContainerPath(signingData)));
+        assertTrue(Files.notExists(getDataToSignPath(signingData)));
     }
 
     private List<File> createFiles() {
@@ -203,6 +187,26 @@ class SigningDataServiceTest {
             files.add(fileService.create(randomTxtFile()));
         }
         return files;
+    }
+
+    private Path getFilePath(File file) {
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath());
+        String filePath = StringUtils.join(new Object[]{LocalStorageFileRepository.getFileHash(file), file.getName()}, "/");
+        return filesDirectoryPath.resolve(filePath).normalize();
+    }
+
+    private Path getContainerPath(SigningData signingData) {
+        return getPath(signingData, signingData.getContainerName());
+    }
+
+    private Path getDataToSignPath(SigningData signingData) {
+        return getPath(signingData, signingData.getDataToSignName());
+    }
+
+    private Path getPath(SigningData signingData, String name) {
+        Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath());
+        String containerPath = StringUtils.join(new Object[]{getSigningDataHash(signingData), name}, "/");
+        return signingDataDirectoryPath.resolve(containerPath).normalize();
     }
 
 }

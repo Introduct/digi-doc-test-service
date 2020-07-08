@@ -3,6 +3,7 @@ package com.ee.digi_doc.web.controller;
 import com.ee.digi_doc.common.properties.FileUploadProperties;
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
+import com.ee.digi_doc.util.FileUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
@@ -47,13 +46,8 @@ class FileRestControllerTest extends AbstractRestControllerTest {
 
     @AfterAll
     public static void after() throws IOException {
-        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath().normalize();
-
-        if (filesDirectoryPath.toFile().listFiles() != null ) {
-            for (java.io.File file : Objects.requireNonNull(filesDirectoryPath.toFile().listFiles())) {
-                Files.delete(file.toPath());
-            }
-        }
+        Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath()).toAbsolutePath();
+        FileUtils.cleanUp(filesDirectoryPath);
     }
 
     @Test
