@@ -7,6 +7,7 @@ import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.storage.StorageFileRepository;
+import com.ee.digi_doc.storage.local.util.HexUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -31,7 +32,13 @@ public class LocalStorageFileRepository implements StorageFileRepository {
         try {
             log.info("Store file: {}", file);
 
-            Path filePath = getNotExistingFilePath(file);
+            String fileHash = HexUtils.getFileHex(file);
+            log.debug("File hash: {}", fileHash);
+
+            Path fileDirectoryPath = Files.createDirectories(fileStorageLocation.resolve(fileHash));
+            log.debug("File directory path: {}", fileDirectoryPath);
+
+            Path filePath = fileDirectoryPath.resolve(file.getName()).normalize();
             log.debug("File path: {}", filePath.toString());
 
             Files.write(filePath, file.getContent());
@@ -86,7 +93,7 @@ public class LocalStorageFileRepository implements StorageFileRepository {
     }
 
     private Path getExistingFilePath(File file) {
-        String fileHash = getFileHash(file);
+        String fileHash = HexUtils.getFileHex(file);
         log.debug("File hash: {}", fileHash);
 
         Path fileDirectoryPath = fileStorageLocation.resolve(fileHash);
@@ -95,17 +102,4 @@ public class LocalStorageFileRepository implements StorageFileRepository {
         return fileDirectoryPath.resolve(file.getName()).normalize();
     }
 
-    private Path getNotExistingFilePath(File file) throws IOException {
-        String fileHash = getFileHash(file);
-        log.debug("File hash: {}", fileHash);
-
-        Path fileDirectoryPath = Files.createDirectories(fileStorageLocation.resolve(fileHash));
-        log.debug("File directory path: {}", fileDirectoryPath);
-
-        return fileDirectoryPath.resolve(file.getName()).normalize();
-    }
-
-    public static String getFileHash(File file) {
-        return Long.toHexString(file.getId());
-    }
 }

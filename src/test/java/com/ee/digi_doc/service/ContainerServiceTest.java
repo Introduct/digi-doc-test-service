@@ -5,6 +5,7 @@ import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.persistance.model.File;
 import com.ee.digi_doc.persistance.model.SigningData;
+import com.ee.digi_doc.storage.local.util.HexUtils;
 import com.ee.digi_doc.util.FileGenerator;
 import com.ee.digi_doc.util.FileUtils;
 import com.ee.digi_doc.util.TestSigningData;
@@ -29,8 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.ee.digi_doc.storage.local.LocalStorageContainerRepository.getContainerHash;
-import static com.ee.digi_doc.storage.local.LocalStorageSigningDataRepository.getSigningDataHash;
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -240,13 +239,13 @@ class ContainerServiceTest {
 
     private Path getSigningDataPath(SigningData signingData, String name) {
         Path signingDataDirectoryPath = Paths.get(storageProperties.getSigningData().getPath());
-        String containerPath = StringUtils.join(new Object[]{getSigningDataHash(signingData), name}, "/");
+        String containerPath = StringUtils.join(new Object[]{HexUtils.getSigningDataHex(signingData), name}, "/");
         return signingDataDirectoryPath.resolve(containerPath).normalize();
     }
 
     private Path getContainerPath(Container container) {
         Path signingDataDirectoryPath = Paths.get(storageProperties.getContainer().getPath());
-        String containerPath = StringUtils.join(new Object[]{getContainerHash(container), container.getName()}, "/");
+        String containerPath = StringUtils.join(new Object[]{HexUtils.getContainerHex(container), container.getName()}, "/");
         return signingDataDirectoryPath.resolve(containerPath).normalize();
     }
 

@@ -4,6 +4,7 @@ import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.exception.InvalidFileNameException;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.model.File;
+import com.ee.digi_doc.storage.local.util.HexUtils;
 import com.ee.digi_doc.util.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -20,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.ee.digi_doc.storage.local.LocalStorageFileRepository.getFileHash;
 import static com.ee.digi_doc.util.FileGenerator.randomFile;
 import static com.ee.digi_doc.util.FileGenerator.randomTxtFile;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -177,8 +177,9 @@ class FileServiceTest {
 
     private Path getFilePath(File file) {
         Path filesDirectoryPath = Paths.get(storageProperties.getFile().getPath());
-        String filePath = StringUtils.join(new Object[]{getFileHash(file), file.getName()}, "/");
+        String filePath = StringUtils.join(new Object[]{HexUtils.getFileHex(file), file.getName()}, "/");
         return filesDirectoryPath.resolve(filePath).normalize();
     }
+
 
 }

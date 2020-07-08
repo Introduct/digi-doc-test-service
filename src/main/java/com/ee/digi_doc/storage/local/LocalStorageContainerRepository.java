@@ -7,6 +7,7 @@ import com.ee.digi_doc.exception.FileNotReadException;
 import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.storage.StorageContainerRepository;
+import com.ee.digi_doc.storage.local.util.HexUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.impl.asic.asice.bdoc.BDocContainerBuilder;
@@ -32,7 +33,7 @@ public class LocalStorageContainerRepository implements StorageContainerReposito
     @Override
     public void storeContainer(Container container) {
         try {
-            String containerHash = getContainerHash(container);
+            String containerHash = HexUtils.getContainerHex(container);
             log.debug("Container hash: {}", container);
 
             Path containerDirectoryPath = Files.createDirectories(containerStorageLocation.resolve(containerHash));
@@ -91,7 +92,7 @@ public class LocalStorageContainerRepository implements StorageContainerReposito
     }
 
     private Path getContainerPath(Container container) {
-        String containerHash = getContainerHash(container);
+        String containerHash = HexUtils.getContainerHex(container);
         log.debug("Container hash: {}", container);
 
         Path containerDirectoryPath = containerStorageLocation.resolve(containerHash);
@@ -100,7 +101,4 @@ public class LocalStorageContainerRepository implements StorageContainerReposito
         return containerDirectoryPath.resolve(container.getName()).normalize();
     }
 
-    public static String getContainerHash(Container container) {
-        return Long.toHexString(container.getId());
-    }
 }

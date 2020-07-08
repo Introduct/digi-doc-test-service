@@ -7,6 +7,7 @@ import com.ee.digi_doc.exception.FileNotReadException;
 import com.ee.digi_doc.exception.FileNotWrittenException;
 import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.storage.StorageSigningDataRepository;
+import com.ee.digi_doc.storage.local.util.HexUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.digidoc4j.Configuration;
 import org.digidoc4j.Container;
@@ -36,7 +37,7 @@ public class LocalStorageSigningDataRepository implements StorageSigningDataRepo
         try {
             log.info("Store signing data: {}", signingData);
 
-            String signingDataHash = getSigningDataHash(signingData);
+            String signingDataHash = HexUtils.getSigningDataHex(signingData);
             log.debug("Signing data hash: {}", signingData);
 
             Path signingDataDirectoryPath = Files.createDirectories(signingDataStorageLocation.resolve(signingDataHash));
@@ -139,7 +140,7 @@ public class LocalStorageSigningDataRepository implements StorageSigningDataRepo
     }
 
     private Path getSigningDataPath(SigningData signingData, String entityName) {
-        String signingDataHash = getSigningDataHash(signingData);
+        String signingDataHash = HexUtils.getSigningDataHex(signingData);
         log.debug("Signing data hash: {}", signingData);
 
         Path signingDataDirectoryPath = signingDataStorageLocation.resolve(signingDataHash);
@@ -148,7 +149,4 @@ public class LocalStorageSigningDataRepository implements StorageSigningDataRepo
         return signingDataDirectoryPath.resolve(entityName).normalize();
     }
 
-    public static String getSigningDataHash(SigningData signingData) {
-        return Long.toHexString(signingData.getId());
-    }
 }
