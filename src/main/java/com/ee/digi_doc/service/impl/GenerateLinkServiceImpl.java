@@ -28,7 +28,9 @@ public class GenerateLinkServiceImpl implements GenerateLinkService {
 
     @Override
     public ResponseEntity<GenerateLinkResponse> generate(String longLink) {
-        return restTemplate.postForEntity(properties.getUrl(), createRequest(longLink), GenerateLinkResponse.class);
+        ResponseEntity<GenerateLinkResponse> response = restTemplate
+                .postForEntity(properties.getUrl(), createRequest(longLink), GenerateLinkResponse.class);
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
 
     private HttpEntity<CreateLinkRequest> createRequest(String longLink) {
