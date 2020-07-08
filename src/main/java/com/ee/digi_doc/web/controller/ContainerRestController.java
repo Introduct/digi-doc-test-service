@@ -5,7 +5,6 @@ import com.ee.digi_doc.mapper.ContainerMapper;
 import com.ee.digi_doc.persistance.model.Container;
 import com.ee.digi_doc.service.ContainerService;
 import com.ee.digi_doc.service.GenerateLinkService;
-import com.ee.digi_doc.web.GenerateLinkResponse;
 import com.ee.digi_doc.web.dto.ContainerDto;
 import com.ee.digi_doc.web.dto.ValidateContainerResultDto;
 import com.ee.digi_doc.web.request.SignContainerRequest;
@@ -52,7 +51,7 @@ public class ContainerRestController {
     }
 
     @GetMapping(value = "/{id}/link", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<GenerateLinkResponse> generateLink(@PathVariable Long id) {
+    public ResponseEntity<Object> generateLink(@PathVariable Long id) {
         return containerService.get(id)
                 .map(containerMapper::toDto)
                 .map(ContainerDto::getUrl)
