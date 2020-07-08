@@ -37,7 +37,7 @@ services:
       - DATABASE_NAME=${DATABASE_NAME:-digi-doc-service}
       - DATABASE_USERNAME=${DATABASE_USERNAME:-service}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD:-servicepass123}
-      - HOST_NAME=${HOST_NAME}
+      - HOST_NAME=${HOST_NAME:-https://18.156.149.72}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/actuator/health"]
       timeout: 60s
