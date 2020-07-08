@@ -1,5 +1,6 @@
 package com.ee.digi_doc.service.impl;
 
+import com.ee.digi_doc.exception.FileNotReadException;
 import com.ee.digi_doc.exception.ResourceNotFoundException;
 import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.Container;
@@ -15,10 +16,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.digidoc4j.Signature;
 import org.digidoc4j.ValidationResult;
 import org.digidoc4j.X509Cert;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collection;
@@ -69,6 +74,22 @@ public class ContainerServiceImpl implements ContainerService {
                     container.setBdDocContainer(storageContainerRepository.getContainer(container));
                     log.debug("DBDoc container has been found in local storage");
                     return container;
+                });
+    }
+
+    @Override
+    public Optional<ResponseEntity<byte[]>> getAsResponseEntry(Long id) {
+        return get(id)
+                .map(container -> {
+                    try {
+                        return ResponseEntity.ok()
+                                .contentType(MediaType.parseMediaType(container.getContentType()))
+                                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + container.getName())
+                                .body(container.getContent());
+                    } catch (IOException e) {
+                        log.error("Error obtained during bdoc container read", e);
+                        throw new FileNotReadException(container.getId());
+                    }
                 });
     }
 
