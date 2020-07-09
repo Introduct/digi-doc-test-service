@@ -33,7 +33,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
 
     private static final String MAX_FILE_COUNT_EXCEEDED_TEMPLATE = "Max file count is exceeded.";
     private static final String NOT_ALL_FILES_FOUNT_TEMPLATE = "Not all files are found by provided file ids.";
-    private static final String DUPLICATE_FILES_TEMPLATE = "There file duplicates.";
+    private static final String DUPLICATE_FILES_TEMPLATE = "There are duplicated files.";
 
     @Value("${sign.max-file-count}")
     private int maxFileCount;
