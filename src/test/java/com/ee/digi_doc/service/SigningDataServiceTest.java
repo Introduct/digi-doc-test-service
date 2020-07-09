@@ -1,5 +1,6 @@
 package com.ee.digi_doc.service;
 
+import com.ee.digi_doc.common.BDocConstants;
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.JpaFileRepository;
 import com.ee.digi_doc.persistance.dao.JpaSigningDataRepository;
@@ -10,7 +11,6 @@ import com.ee.digi_doc.util.FileUtils;
 import com.ee.digi_doc.util.TestSigningData;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import org.apache.commons.lang3.StringUtils;
-import org.digidoc4j.Container;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -87,8 +87,10 @@ class SigningDataServiceTest {
         assertNotNull(signingData.getCreatedOn());
         assertNotNull(signingData.getSignatureInHex());
 
-        assertTrue(signingData.getContainerName().endsWith("." + Container.DocumentType.BDOC.name().toLowerCase()));
-        assertTrue(signingData.getDataToSignName().endsWith(".bin"));
+        assertTrue(signingData.getContainerName().startsWith(BDocConstants.CONTAINER_PREFIX));
+        assertTrue(signingData.getDataToSignName().startsWith(BDocConstants.DATA_TO_SIGN_PREFIX));
+        assertTrue(signingData.getContainerName().endsWith("." + BDocConstants.CONTAINER_EXTENSION));
+        assertTrue(signingData.getDataToSignName().endsWith("." + BDocConstants.DATA_TO_SIGN_EXTENSION));
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isPresent());
 
@@ -124,8 +126,10 @@ class SigningDataServiceTest {
         assertNotNull(signingData.getCreatedOn());
         assertNotNull(signingData.getSignatureInHex());
 
-        assertTrue(signingData.getContainerName().endsWith("." + Container.DocumentType.BDOC.name().toLowerCase()));
-        assertTrue(signingData.getDataToSignName().endsWith(".bin"));
+        assertTrue(signingData.getContainerName().startsWith(BDocConstants.CONTAINER_PREFIX));
+        assertTrue(signingData.getDataToSignName().startsWith(BDocConstants.DATA_TO_SIGN_PREFIX));
+        assertTrue(signingData.getContainerName().endsWith("." + BDocConstants.CONTAINER_EXTENSION));
+        assertTrue(signingData.getDataToSignName().endsWith("." + BDocConstants.DATA_TO_SIGN_EXTENSION));
 
         assertTrue(jpaSigningDataRepository.findById(signingData.getId()).isPresent());
 
@@ -158,8 +162,10 @@ class SigningDataServiceTest {
         assertNotNull(signingData.getCreatedOn());
         assertNotNull(signingData.getSignatureInHex());
 
-        assertTrue(signingData.getContainerName().endsWith("." + Container.DocumentType.BDOC.name().toLowerCase()));
-        assertTrue(signingData.getDataToSignName().endsWith(".bin"));
+        assertTrue(signingData.getContainerName().startsWith(BDocConstants.CONTAINER_PREFIX));
+        assertTrue(signingData.getDataToSignName().startsWith(BDocConstants.DATA_TO_SIGN_PREFIX));
+        assertTrue(signingData.getContainerName().endsWith("." + BDocConstants.CONTAINER_EXTENSION));
+        assertTrue(signingData.getDataToSignName().endsWith("." + BDocConstants.DATA_TO_SIGN_EXTENSION));
     }
 
     @Test

@@ -25,7 +25,6 @@ class ContainerMapperTest {
     @Test
     void toDtoTest() {
         Container source = new Container();
-        source.setName(RandomStringUtils.randomAlphabetic(10));
         source.setContentType(RandomStringUtils.randomAlphabetic(40));
 
         source = jpaContainerRepository.save(source);

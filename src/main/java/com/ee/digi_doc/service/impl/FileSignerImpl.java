@@ -2,10 +2,8 @@ package com.ee.digi_doc.service.impl;
 
 import com.ee.digi_doc.common.properties.Digidoc4jProperties;
 import com.ee.digi_doc.persistance.model.File;
-import com.ee.digi_doc.persistance.model.SigningData;
 import com.ee.digi_doc.service.FileSigner;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.digidoc4j.*;
 import org.digidoc4j.impl.asic.asice.bdoc.BDocContainerBuilder;
 import org.springframework.stereotype.Service;
@@ -22,8 +20,6 @@ import java.util.stream.Collectors;
 @Service
 public class FileSignerImpl implements FileSigner {
 
-    private static final String DATA_TO_SIGN_FILE_EXTENSION = "bin";
-
     private final DigestAlgorithm algorithm;
     private final Configuration configuration;
 
@@ -38,31 +34,18 @@ public class FileSignerImpl implements FileSigner {
                 .map(file -> new DataFile(file.getContent(), file.getName(), file.getContentType()))
                 .collect(Collectors.toList());
 
-        Container container = createContainer(filesToSign);
+        org.digidoc4j.Container container = createContainer(filesToSign);
 
         DataToSign dataToSign = createDataToSign(container, certificateInHex);
 
-        SigningData signingData = new SigningData();
-        signingData.setContainerName(generateContainerName());
-        signingData.setContainer(container);
-        signingData.setDataToSignName(generateDataToSignName());
-        signingData.setDataToSign(dataToSign);
-
-        return signingData;
+        return new SigningData(container, dataToSign);
     }
 
     @Override
-    public com.ee.digi_doc.persistance.model.Container signContainer(SigningData signingData, String signatureInHex) {
+    public Container signContainer(SigningData signingData, String signatureInHex) {
         Signature signature = signingData.getDataToSign().finalize(DatatypeConverter.parseHexBinary(signatureInHex));
         signingData.getContainer().addSignature(signature);
-
-        com.ee.digi_doc.persistance.model.Container container = new com.ee.digi_doc.persistance.model.Container();
-
-        container.setName(signingData.getContainerName());
-        container.setBdDocContainer(signingData.getContainer());
-        container.setContentType(getContentType());
-
-        return container;
+        return new Container(signingData.getContainer(), getContentType());
     }
 
     private String getContentType() {
@@ -93,17 +76,5 @@ public class FileSignerImpl implements FileSigner {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(inStream);
         }
-    }
-
-    private String generateContainerName() {
-        return generateName(Container.DocumentType.BDOC.name().toLowerCase());
-    }
-
-    private String generateDataToSignName() {
-        return generateName(DATA_TO_SIGN_FILE_EXTENSION);
-    }
-
-    private String generateName(String fileExtension) {
-        return RandomStringUtils.randomAlphabetic(10) + "." + fileExtension;
     }
 }
