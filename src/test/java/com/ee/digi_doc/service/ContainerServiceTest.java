@@ -1,5 +1,6 @@
 package com.ee.digi_doc.service;
 
+import com.ee.digi_doc.common.BDocConstants;
 import com.ee.digi_doc.common.properties.StorageProperties;
 import com.ee.digi_doc.persistance.dao.JpaContainerRepository;
 import com.ee.digi_doc.persistance.model.Container;
@@ -95,7 +96,8 @@ class ContainerServiceTest {
         assertNotNull(container.getContentType());
         assertNotNull(container.getSignedOn());
 
-        assertEquals(signingData.getContainerName(), container.getName());
+        assertTrue(container.getName().startsWith(BDocConstants.CONTAINER_PREFIX));
+        assertTrue(container.getName().endsWith("." + BDocConstants.CONTAINER_EXTENSION));
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
@@ -133,7 +135,8 @@ class ContainerServiceTest {
         assertNotNull(container.getContentType());
         assertNotNull(container.getSignedOn());
 
-        assertEquals(signingData.getContainerName(), container.getName());
+        assertTrue(container.getName().startsWith(BDocConstants.CONTAINER_PREFIX));
+        assertTrue(container.getName().endsWith("." + BDocConstants.CONTAINER_EXTENSION));
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
 
         assertTrue(jpaContainerRepository.findById(container.getId()).isPresent());
@@ -171,7 +174,8 @@ class ContainerServiceTest {
         assertNotNull(container.getSignedOn());
         assertNotNull(container.getContent());
 
-        assertEquals(signingData.getContainerName(), container.getName());
+        assertTrue(container.getName().startsWith(BDocConstants.CONTAINER_PREFIX));
+        assertTrue(container.getName().endsWith("." + BDocConstants.CONTAINER_EXTENSION));
         assertEquals("application/vnd.etsi.asic-e+zip", container.getContentType());
     }
 

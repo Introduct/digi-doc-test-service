@@ -1,5 +1,7 @@
 package com.ee.digi_doc.persistance.model;
 
+import com.ee.digi_doc.common.BDocConstants;
+import com.ee.digi_doc.persistance.annotation.GeneratedStringValue;
 import lombok.*;
 
 import javax.persistence.*;
@@ -16,7 +18,9 @@ public class Container {
     @Setter(AccessLevel.PRIVATE)
     private Long id;
 
+    @GeneratedStringValue(prefix = BDocConstants.CONTAINER_PREFIX, extension = BDocConstants.CONTAINER_EXTENSION)
     @Column(nullable = false, updatable = false, length = 50)
+    @Setter(AccessLevel.PRIVATE)
     private String name;
 
     @Column(nullable = false, updatable = false)

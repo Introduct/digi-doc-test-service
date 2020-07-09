@@ -55,7 +55,6 @@ public class ContainerServiceImpl implements ContainerService {
                 .signContainer(signingData.getGeneratedSigningData(), request.getSignatureInHex());
 
         Container container = new Container();
-        container.setName(signingData.getContainerName());
         container.setBdDocContainer(signedContainer.getBdDocContainer());
         container.setContentType(signedContainer.getContentType());
         log.debug("Container has been signed, container: {}", container);

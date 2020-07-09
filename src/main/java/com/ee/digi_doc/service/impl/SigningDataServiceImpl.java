@@ -10,7 +10,6 @@ import com.ee.digi_doc.storage.StorageSigningDataRepository;
 import com.ee.digi_doc.web.request.CreateSigningDataRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.digidoc4j.Container;
 import org.digidoc4j.DataToSign;
 import org.springframework.stereotype.Service;
@@ -25,8 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SigningDataServiceImpl implements SigningDataService {
-
-    private static final String DATA_TO_SIGN_FILE_EXTENSION = "bin";
 
     private final JpaSigningDataRepository jpaSigningDataRepository;
     private final StorageSigningDataRepository storageSigningDataRepository;
@@ -49,8 +46,6 @@ public class SigningDataServiceImpl implements SigningDataService {
 
         SigningData signingData = new SigningData();
         signingData.setGeneratedSigningData(generatedDataToSign);
-        signingData.setContainerName(generateContainerName());
-        signingData.setDataToSignName(generateDataToSignName());
 
         signingData = jpaSigningDataRepository.saveAndFlush(signingData);
         log.debug("Data to sign: {}", signingData);
@@ -96,17 +91,4 @@ public class SigningDataServiceImpl implements SigningDataService {
         storageSigningDataRepository.deleteDataToSigh(signingData);
         log.debug("Data to sigh has been removed from local storage");
     }
-
-    private String generateContainerName() {
-        return generateName(Container.DocumentType.BDOC.name().toLowerCase());
-    }
-
-    private String generateDataToSignName() {
-        return generateName(DATA_TO_SIGN_FILE_EXTENSION);
-    }
-
-    private String generateName(String fileExtension) {
-        return RandomStringUtils.randomAlphabetic(10) + "." + fileExtension;
-    }
-
 }
