@@ -128,7 +128,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
     void givenNotAllFileExist_whenCreateSigningData_thenBadRequest() throws Exception {
         CreateSigningDataRequest request = createSigningDataRequest();
         request.getFileIds().set(0, getNotExistingFileId());
-        assertFieldError(badRequest(createSigningData(request)), "ValidExistingFileIds",
+        assertFieldError(badRequest(createSigningData(request)), "ValidFileIds",
                 "fileIds", NOT_ALL_FILES_FOUNT_TEMPLATE);
     }
 
@@ -138,7 +138,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
         request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
         request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
         request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
-        assertFieldError(badRequest(createSigningData(request)), "ValidFileIdsCount",
+        assertFieldError(badRequest(createSigningData(request)), "ValidFileIds",
                 "fileIds", MAX_FILE_COUNT_EXCEEDED_TEMPLATE, maxFileCount);
     }
 
@@ -151,7 +151,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
 
         CreateSigningDataRequest request = createSigningDataRequest(fileIds);
 
-        assertFieldError(badRequest(createSigningData(request)), "ValidUniqueFiles",
+        assertFieldError(badRequest(createSigningData(request)), "ValidFileIds",
                 "fileIds", DUPLICATE_FILES_TEMPLATE);
     }
 
