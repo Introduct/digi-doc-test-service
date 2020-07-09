@@ -1,5 +1,6 @@
 package com.ee.digi_doc.persistance.model;
 
+import com.ee.digi_doc.service.FileSigner;
 import eu.europa.esig.dss.spi.DSSUtils;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -33,9 +34,11 @@ public class SigningData {
     private LocalDateTime createdOn;
 
     @Transient
+    @Setter(AccessLevel.PRIVATE)
     private Container container;
 
     @Transient
+    @Setter(AccessLevel.PRIVATE)
     private DataToSign dataToSign;
 
     @PrePersist
@@ -46,5 +49,14 @@ public class SigningData {
     public String getSignatureInHex() {
         return DatatypeConverter.printHexBinary(DSSUtils.digest(eu.europa.esig.dss.enumerations.DigestAlgorithm.SHA256,
                 dataToSign.getDataToSign()));
+    }
+
+    public void setGeneratedSigningData(FileSigner.SigningData generatedSigningData) {
+        setContainer(generatedSigningData.getContainer());
+        setDataToSign(generatedSigningData.getDataToSign());
+    }
+
+    public FileSigner.SigningData getGeneratedSigningData() {
+        return new FileSigner.SigningData(getContainer(), getDataToSign());
     }
 }
