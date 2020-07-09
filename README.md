@@ -1,6 +1,7 @@
 # DigiDoc Test Service
 
-This repository contains back-end part of the test service to operate on signed DigiDoc containers.
+This repository contains back-end part of the test service to operate on DigiDoc containers.
+
 **DigiDoc Test Service** available [here](https://18.156.149.72/)
 
 ### Contents
@@ -10,7 +11,6 @@ This repository contains back-end part of the test service to operate on signed 
 * [Dependencies](#dependencies)
 * [System requirements](#system-requirements)
 * [Installing](#installing)
-
 
 ### Overview
 
@@ -23,15 +23,17 @@ This application allows you to operate on DigiDoc container:
 
 ### Features
 
-* Use your ID-card with integrated DigiDoc key to sign the files;
+* Use your ID-card with integrated DigiDoc key to sign files;
 
 * [Id software](https://installer.id.ee/) has to be installed on your local machine to use **DigiDoc Test Service**;
 
 * DigiDoc4j used for digitally signing files and signature verification;
 
-* Created container will be available for download during 48 hours
+* Created container will be available to download during 48 hours;
 
-* Link generated with **Bitly** service
+* There is restriction for file upload - maximum number of files is 20 and maximum size of one file is 10 Mb 
+
+* Link generated with [Bitly](https://bitly.com/) service;
 
 ### Dependencies
 
@@ -52,19 +54,23 @@ This repository contains only frontend part. To install all components also foll
 - [DigiDoc backend test service](https://github.com/Introduct/digi-doc-test-service)
 Each componenet is installed with help of docker-compose and each repository contains corresponding compose file.
 
-### Build backend docker image
+**1. Build backend docker image**
+
 Clone this repo to destination host and build docker image. Dockerfile contains all neccessary build steps.
 ```
 git clone  https://github.com/Introduct/digi-doc-test-service
 cd digi-doc-test-service 
 docker build . -t digi-doc-test-service
 ```
-### Parametrize settings.
+
+**2. Parametrize settings.**
+
 [Settings for backend service](https://github.com/Introduct/digi-doc-test-service/blob/master/docker-compose-dev.yml#L35-L40) can be reviwed in compose file.
 Database settings can be used as is since the database is deployed alongside with service in docker container.
 The only settings that should be revised and tuned for you environment is `HOST_NAME`. It should be set to IP or DNS name of the destination host.
 
-### Run backend as docker service
+**3. Run backend as docker service.**
+
 On destination host run docker-compose from folder with cloned repo.
 It will start backend alongside with database.
 ```
