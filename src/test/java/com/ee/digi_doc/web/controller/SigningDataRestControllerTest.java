@@ -11,6 +11,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.ResultActions;
 
 import javax.validation.constraints.NotNull;
@@ -32,6 +33,7 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
 
     private static final String MAX_FILE_COUNT_EXCEEDED_TEMPLATE = "Max file count is exceeded.";
     private static final String NOT_ALL_FILES_FOUNT_TEMPLATE = "Not all files are found by provided file ids.";
+    private static final String DUPLICATE_FILES_TEMPLATE = "There file duplicates.";
 
     @Value("${sign.max-file-count}")
     private int maxFileCount;
@@ -138,6 +140,19 @@ class SigningDataRestControllerTest extends AbstractRestControllerTest {
         request.getFileIds().add(getFileId(ok(createFile(FileGenerator.randomTxtFile()))));
         assertFieldError(badRequest(createSigningData(request)), "ValidFileIdsCount",
                 "fileIds", MAX_FILE_COUNT_EXCEEDED_TEMPLATE, maxFileCount);
+    }
+
+    @Test
+    void givenFileUploadedTwice_thenCreateSigningData_badRequest() throws Exception {
+        MockMultipartFile multipartFile = randomTxtFile();
+
+        List<Long> fileIds = List.of(getFileId(ok(createFile(multipartFile))),
+                getFileId(ok(createFile(multipartFile))));
+
+        CreateSigningDataRequest request = createSigningDataRequest(fileIds);
+
+        assertFieldError(badRequest(createSigningData(request)), "ValidUniqueFiles",
+                "fileIds", DUPLICATE_FILES_TEMPLATE);
     }
 
     private ResultActions getSigningData(@NotNull Long id) throws Exception {
