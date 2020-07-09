@@ -23,17 +23,17 @@ This application allows you to operate on DigiDoc container:
 
 ### Features
 
-* Use your ID-card with integrated DigiDoc key to sign files;
+* Use your ID-card with integrated DigiDoc key to sign files
 
-* [Id software](https://installer.id.ee/) has to be installed on your local machine to use **DigiDoc Test Service**;
+* [Id software](https://installer.id.ee/) has to be installed on your local machine to use **DigiDoc Test Service**
 
-* DigiDoc4j used for digitally signing files and signature verification;
+* DigiDoc4j used for digitally signing files and signature verification
 
-* Created container will be available to download during 48 hours;
+* Created container will be available to download during 48 hours
 
-* There is restriction for file upload - maximum number of files is 20 and maximum size of one file is 10 Mb 
+* There is restriction for file upload - maximum number of files is 20 and maximum size of one file is 10 Mb, these values can be configurated in [application.yml](/src/main/resources/application.yml)
 
-* Link generated with [Bitly](https://bitly.com/) service;
+* Link generated with [Bitlink](https://bitly.com/) service
 
 ### Dependencies
 
